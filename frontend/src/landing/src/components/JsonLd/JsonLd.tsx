@@ -43,7 +43,7 @@ export function OrganizationJsonLd() {
 		"@id": ORGANIZATION_ID,
 		name: COMPANY.NAME,
 		url: COMPANY.MARKETING_URL,
-		logo: `${COMPANY.MARKETING_URL}/ao-logo.svg`,
+		logo: `${COMPANY.MARKETING_URL}/badri-logo.svg`,
 		description: PRODUCT_DESCRIPTION,
 		email: supportEmail,
 		contactPoint: {
@@ -134,7 +134,7 @@ export function ArticleJsonLd({
 			name: COMPANY.NAME,
 			logo: {
 				"@type": "ImageObject",
-				url: `${COMPANY.MARKETING_URL}/ao-logo.svg`,
+				url: `${COMPANY.MARKETING_URL}/badri-logo.svg`,
 			},
 		},
 		datePublished: publishedTime,
@@ -188,7 +188,7 @@ export function ComparisonJsonLd({
 			name: COMPANY.NAME,
 			logo: {
 				"@type": "ImageObject",
-				url: `${COMPANY.MARKETING_URL}/ao-logo.svg`,
+				url: `${COMPANY.MARKETING_URL}/badri-logo.svg`,
 			},
 		},
 		datePublished: publishedTime,

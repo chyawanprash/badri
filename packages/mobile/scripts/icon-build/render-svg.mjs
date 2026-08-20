@@ -1,4 +1,4 @@
-// Rasterize assets/ao-logo.svg at high resolution using the Chromium bundled with
+// Rasterize assets/badri-logo.svg at high resolution using the Chromium bundled with
 // frontend's playwright. Chromium renders the traced logo's overlapping fills
 // faithfully; cairosvg is not an option (no libcairo on macOS by default).
 //
@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../../..');
-const svgPath = path.join(repoRoot, 'assets', 'ao-logo.svg');
+const svgPath = path.join(repoRoot, 'assets', 'badri-logo.svg');
 const svg = fs.readFileSync(svgPath, 'utf8');
 const out = process.argv[2];
 const width = Number(process.argv[3] ?? 4096);

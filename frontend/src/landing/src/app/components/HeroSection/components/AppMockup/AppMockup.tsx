@@ -1346,7 +1346,7 @@ function Sidebar({ cards }: { cards: PreviewCard[] }) {
 
 			<div className="flex shrink-0 items-center gap-1.5 px-3 pb-2 pt-0.5">
 				<img
-					src="/ao-logo.svg"
+					src="/badri-logo.svg"
 					alt=""
 					width={22}
 					height={22}

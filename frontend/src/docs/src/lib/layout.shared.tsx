@@ -8,7 +8,7 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
           <img
-            src={`${COMPANY.MARKETING_URL}/ao-logo.svg`}
+            src={`${COMPANY.MARKETING_URL}/badri-logo.svg`}
             alt=""
             width={20}
             height={20}

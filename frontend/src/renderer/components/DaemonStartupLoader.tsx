@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import aoLogo from "../../../assets/ao-logo.svg";
+import aoLogo from "../../../assets/badri-logo.svg";
 
 const STARTUP_PHRASE_KEYS = [
 	"startup.startingServices",

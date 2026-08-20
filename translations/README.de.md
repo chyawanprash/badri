@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../assets/ao-logo.svg" alt="Agent Orchestrator" width="144" height="144" />
+  <img src="../assets/badri-logo.svg" alt="Agent Orchestrator" width="144" height="144" />
 
 ### Agent Orchestrator
 

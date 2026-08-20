@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Regenerate every app icon asset from assets/ao-logo.svg (the repo-root source of truth).
+# Regenerate every app icon asset from assets/badri-logo.svg (the repo-root source of truth).
 #
 #   packages/mobile/scripts/generate-icons.sh
 #
 # Stages:
-#   1. render-svg.mjs  rasterises assets/ao-logo.svg at 4096px via frontend's Chromium
+#   1. render-svg.mjs  rasterises assets/badri-logo.svg at 4096px via frontend's Chromium
 #   2. separate.py     splits the render into wand / creature layers by colour
 #   3. compose.py      recolours to the Electron gradient and emits every output
 #
@@ -37,7 +37,7 @@ python3 -c 'import PIL' 2>/dev/null \
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-echo "==> rasterising ao-logo.svg"
+echo "==> rasterising badri-logo.svg"
 node "$here/icon-build/render-svg.mjs" "$work/logo.png" 4096
 
 echo "==> splitting wand / creature layers"

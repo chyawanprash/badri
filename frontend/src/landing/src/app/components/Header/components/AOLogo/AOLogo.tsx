@@ -5,7 +5,7 @@ export function AOLogo() {
       className="inline-flex items-center gap-2 font-sans text-base font-medium leading-none tracking-[-0.5px] text-foreground"
     >
       <img
-        src="/ao-logo.svg"
+        src="/badri-logo.svg"
         alt=""
         width={20}
         height={20}

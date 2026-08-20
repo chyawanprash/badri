@@ -1,7 +1,7 @@
 """Split the rendered ao-logo into wand / creature layers.
 
 Icon Composer needs the wand and the creature as separate layers so iOS 26 can
-light each one independently. The traced ao-logo.svg draws the wand and the trunk
+light each one independently. The traced badri-logo.svg draws the wand and the trunk
 curl inside a single subpath, so geometry cannot separate them -- but colour can:
 the wand is the desaturated grey family (#DEE3EA shaft, #7E8BB0 shadow side) and
 the creature is the blue family. The hue+value rule was checked against all 21
