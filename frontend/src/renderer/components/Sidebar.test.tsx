@@ -438,7 +438,7 @@ describe("Sidebar", () => {
 			useUiStore.getState().requestCreateProject();
 		});
 
-		expect(await screen.findByRole("dialog", { name: "Add code to Agent Orchestrator" })).toBeInTheDocument();
+		expect(await screen.findByRole("dialog", { name: "Add code to Badri" })).toBeInTheDocument();
 	});
 
 	it("keeps the create-project shortcut available when there are no projects", async () => {
@@ -448,7 +448,7 @@ describe("Sidebar", () => {
 			useUiStore.getState().requestCreateProject();
 		});
 
-		expect(await screen.findByRole("dialog", { name: "Add code to Agent Orchestrator" })).toBeInTheDocument();
+		expect(await screen.findByRole("dialog", { name: "Add code to Badri" })).toBeInTheDocument();
 	});
 
 	it("reveals orchestrator and kebab buttons on the project row (no dashboard button)", () => {
@@ -619,7 +619,7 @@ describe("Sidebar", () => {
 		renderSidebar({ onCreateProject });
 
 		await user.click(screen.getByLabelText("New project"));
-		expect(screen.getByRole("dialog", { name: "Add code to Agent Orchestrator" })).toBeInTheDocument();
+		expect(screen.getByRole("dialog", { name: "Add code to Badri" })).toBeInTheDocument();
 		expect(window.ao!.app.chooseDirectory).not.toHaveBeenCalled();
 		await user.click(screen.getByRole("button", { name: /^Open local repository$/i }));
 

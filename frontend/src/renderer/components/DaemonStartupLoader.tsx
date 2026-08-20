@@ -27,7 +27,7 @@ export function DaemonStartupLoader() {
 	return (
 		<div
 			aria-busy="true"
-			aria-label={t("startup.aria", { brand: "Agent Orchestrator" })}
+			aria-label={t("startup.aria", { brand: "Badri" })}
 			aria-live="polite"
 			className="ao-startup-screen flex h-full w-full items-center justify-center bg-background text-foreground"
 			data-testid="daemon-startup-loader"
@@ -37,7 +37,7 @@ export function DaemonStartupLoader() {
 				<div className="grid h-28 w-32 place-items-center" aria-hidden="true">
 					<img className="ao-startup-logo h-22 w-25 object-contain" src={aoLogo} alt="" />
 				</div>
-				<p className="mt-5 text-base font-semibold tracking-tight text-foreground">Agent Orchestrator</p>
+				<p className="mt-5 text-base font-semibold tracking-tight text-foreground">Badri</p>
 				<p className="mt-2 min-h-5 text-md-sm text-muted-foreground">
 					<span aria-hidden="true" className="ao-startup-status" key={phrase}>
 						{phrase}

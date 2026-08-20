@@ -1449,7 +1449,7 @@ function stubProcess(platform: NodeJS.Platform, execPath: string): () => void {
 // filesystem rather than a stub. Returns the exec path inside it.
 function makeBundle(): { root: string; bundle: string; execPath: string } {
   const root = mkdtempSync(nodePath.join(os.tmpdir(), "ao-updater-perm-"));
-  const bundle = nodePath.join(root, "Agent Orchestrator.app");
+  const bundle = nodePath.join(root, "Badri.app");
   mkdirSync(nodePath.join(bundle, "Contents", "MacOS"), { recursive: true });
   return {
     root,
@@ -1459,7 +1459,7 @@ function makeBundle(): { root: string; bundle: string; execPath: string } {
 }
 
 const TRANSLOCATED_EXEC_PATH =
-  "/private/var/folders/hg/vkmz93d1T/T/AppTranslocation/0AC4-11EE/d/Agent Orchestrator.app/Contents/MacOS/agent-orchestrator";
+  "/private/var/folders/hg/vkmz93d1T/T/AppTranslocation/0AC4-11EE/d/Badri.app/Contents/MacOS/agent-orchestrator";
 
 describe("quitAndInstallUpdate", () => {
   afterEach(() => {
@@ -1521,7 +1521,7 @@ describe("quitAndInstallUpdate", () => {
       const box = dialog.showMessageBox.mock.calls[0][0] as { detail: string };
       expect(box.detail).toContain(root);
       // Must NOT tell a user already sitting in /Applications to move there.
-      expect(box.detail).not.toContain("move Agent Orchestrator.app into /Applications");
+      expect(box.detail).not.toContain("move Badri.app into /Applications");
     } finally {
       restore();
       chmodSync(root, 0o755);
@@ -1549,7 +1549,7 @@ describe("quitAndInstallUpdate", () => {
   it("fails open and installs when the derived bundle path does not exist", async () => {
     const restore = stubProcess(
       "darwin",
-      "/nonexistent-ao-test/Agent Orchestrator.app/Contents/MacOS/agent-orchestrator",
+      "/nonexistent-ao-test/Badri.app/Contents/MacOS/agent-orchestrator",
     );
     try {
       const { module, autoUpdater, dialog } = await importAutoUpdater();

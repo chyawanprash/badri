@@ -37,9 +37,9 @@ export function buildWhenToUseSection(
 		: "To learn the product, start with the docs index at https://aoagents.dev/docs/.";
 
 	return [
-		"## When to use Agent Orchestrator",
+		"## When to use Badri",
 		"",
-		"Reach for Agent Orchestrator when you need to:",
+		"Reach for Badri when you need to:",
 		"",
 		"- Run several coding agents (Claude Code, Codex, OpenCode, or any CLI agent) at the same time on one repository without them stepping on each other, each agent gets an isolated Git worktree and its own branch.",
 		"- Orchestrate agent work through the desktop app and local `ao` CLI: create workspaces, launch agents with a prompt, open terminals, and track tasks.",
@@ -47,7 +47,7 @@ export function buildWhenToUseSection(
 		"- Automatically route CI failures and review feedback to the agent session that owns the branch, so the right agent can handle failures without manual babysitting.",
 		"- Review diffs, manage ports, and monitor many concurrent agent sessions from one dashboard.",
 		"",
-		`Agent Orchestrator is not a coding agent itself; it is the local workspace and orchestration layer the agents run in. If you are an AI agent inside an AO-managed session, use the installed \`ao\` CLI. ${documentationDirection}`,
+		`Badri is not a coding agent itself; it is the local workspace and orchestration layer the agents run in. If you are an AI agent inside an AO-managed session, use the installed \`ao\` CLI. ${documentationDirection}`,
 	];
 }
 
@@ -68,7 +68,7 @@ export function buildDeveloperResourcesSection(
 					`- [CLI](${docsUrl}/cli/): local \`ao\` command reference`,
 				]
 			: []),
-		`- [Agent instructions](${baseUrl}/agents.md): when and how AI agents should use Agent Orchestrator`,
+		`- [Agent instructions](${baseUrl}/agents.md): when and how AI agents should use Badri`,
 		`- [Blog llms.txt](${baseUrl}/blog/llms.txt): scoped index of blog posts`,
 		`- [GitHub](${COMPANY.GITHUB_URL}): source code and releases`,
 	];

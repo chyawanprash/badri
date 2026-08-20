@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 const LAST_UPDATED = "19 August 2026";
 
 const description =
-  "How Agent Orchestrator handles data in AO Mobile, the desktop app and CLI, and aoagents.dev: local-first operation, optional analytics, waitlists, and testimonial submissions.";
+  "How Badri handles data in AO Mobile, the desktop app and CLI, and aoagents.dev: local-first operation, optional analytics, waitlists, and testimonial submissions.";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
 
           <div className="mt-8 rounded-[8px] border border-border bg-card/50 p-6 sm:p-7">
             <p className="text-[15px] leading-[1.75] text-muted-foreground sm:text-[16px]">
-              <Strong>The short version.</Strong> Agent Orchestrator runs on your
+              <Strong>The short version.</Strong> Badri runs on your
               own machine. No account is required, and no hosted AO service stores
               your work. We never see your source code, prompts, agent output,
               terminal contents, repository names, or file paths, and we never
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
         <div className="mt-14 space-y-10">
           <Section id="scope" title="What this policy covers">
             <p>
-              Agent Orchestrator ("AO") is open-source software published by the
+              Badri ("AO") is open-source software published by the
               Untrivial-ai project. This policy applies to:
             </p>
             <Bullets>
@@ -355,7 +355,7 @@ export default function PrivacyPage() {
                 to stop daemon events. Because AO is open source, you can also
                 build it yourself with an empty <Code>VITE_AO_POSTHOG_KEY</Code>
                 , which removes transmission entirely. See{" "}
-                <Ext href="https://github.com/Untrivial-ai/agent-orchestrator/blob/main/docs/telemetry.md">
+                <Ext href="https://github.com/chyawanprash/badri/blob/main/docs/telemetry.md">
                   docs/telemetry.md
                 </Ext>{" "}
                 for the full, source-level detail.
@@ -609,7 +609,7 @@ export default function PrivacyPage() {
               </Bullet>
             </Bullets>
             <p className="text-muted-foreground">
-              Agent Orchestrator is open-source software released under Apache
+              Badri is open-source software released under Apache
               2.0 and provided as-is. If this policy and the source code ever
               disagree, the source code is the truth — and you are welcome to
               read it.

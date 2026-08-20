@@ -18,7 +18,7 @@ import { DesktopAppPreview, PhoneAppPreview } from "./StaticAppPreviews";
 export const metadata: Metadata = {
   title: "Download",
   description:
-    "Download Agent Orchestrator for macOS, Windows, or Linux, or join the AO Mobile beta on iOS and Android.",
+    "Download Badri for macOS, Windows, or Linux, or join the AO Mobile beta on iOS and Android.",
 };
 
 interface GitHubReleaseAsset {

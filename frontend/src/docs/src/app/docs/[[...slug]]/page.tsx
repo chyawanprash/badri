@@ -37,7 +37,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   if (!page) notFound();
 
   return {
-    title: `${page.data.title} | Agent Orchestrator Docs`,
+    title: `${page.data.title} | Badri Docs`,
     description: page.data.description,
   };
 }

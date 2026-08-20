@@ -50,7 +50,7 @@ interface TrackItem {
 	summary: string;
 }
 
-const repoName = "Untrivial-ai/agent-orchestrator";
+const repoName = "chyawanprash/badri";
 const repoAvatar = "https://github.com/Untrivial-ai.png?size=64";
 
 const previewTokenStyle = {
@@ -1355,7 +1355,7 @@ function Sidebar({ cards }: { cards: PreviewCard[] }) {
 					draggable="false"
 				/>
 				<div className="min-w-0 flex-1 translate-y-px truncate text-[12px] font-bold leading-tight tracking-tight text-[var(--preview-sidebar-foreground)]">
-					Agent Orchestrator
+					Badri
 				</div>
 			</div>
 
@@ -1808,7 +1808,7 @@ function OrchestratorView({
 					</div>
 					<div className="min-w-0">
 						<div className="text-[13px] font-semibold tracking-[-0.5px] text-[var(--preview-foreground)]">
-							Agent Orchestrator
+							Badri
 						</div>
 						<div className="truncate text-[10px] text-[var(--preview-muted-foreground)]">
 							Planning workers for {selectedTrack.label.toLowerCase()}
@@ -2050,7 +2050,7 @@ export function AppMockup() {
 		<div
 			ref={windowRef}
 			role="img"
-			aria-label="Preview of the Agent Orchestrator board: agent tasks move across Pending Work, Iterating, In Review, and Ready to merge."
+			aria-label="Preview of the Badri board: agent tasks move across Pending Work, Iterating, In Review, and Ready to merge."
 			className="absolute z-10 select-none overflow-hidden rounded-[var(--mockup-shell-radius)] border border-[var(--preview-border)] bg-[var(--preview-sidebar)] font-sans tracking-tight text-[var(--preview-foreground)] antialiased shadow-[0_30px_80px_-24px_rgba(0,0,0,0.75)] [&_.font-mono]:tracking-normal"
 			style={mockupShellStyle}
 		>

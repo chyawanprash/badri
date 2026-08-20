@@ -219,7 +219,7 @@ export function PlatformSupport({
   );
 }
 
-const RELEASES_URL = "https://github.com/Untrivial-ai/agent-orchestrator/releases";
+const RELEASES_URL = "https://github.com/chyawanprash/badri/releases";
 const CHANNELS = ["Stable", "Nightly"] as const;
 
 export async function InstallDownloads() {
@@ -229,7 +229,7 @@ export async function InstallDownloads() {
   return (
     <div className="my-6">
       <div className="mb-3 flex items-center justify-between">
-        <div className="text-sm font-semibold text-foreground">Get Agent Orchestrator</div>
+        <div className="text-sm font-semibold text-foreground">Get Badri</div>
         <a
           href={RELEASES_URL}
           className="inline-flex min-h-10 items-center rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-foreground !no-underline transition-[background-color,border-color,transform] duration-150 hover:border-foreground/30 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.96] motion-reduce:transition-none"

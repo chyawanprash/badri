@@ -991,7 +991,7 @@ function PreviewSidebar({
 			</div>
 			<div className="flex shrink-0 items-center gap-1.5 px-3 pb-2">
 				<img src="/badri-logo.svg" alt="" className="size-[18px] shrink-0 rounded-md" draggable={false} />
-				<span className="truncate text-sm font-semibold tracking-tight text-[var(--preview-foreground)]">Agent Orchestrator</span>
+				<span className="truncate text-sm font-semibold tracking-tight text-[var(--preview-foreground)]">Badri</span>
 			</div>
 			<div className="flex shrink-0 flex-col px-2">
 				<div className="mb-3">

@@ -17,7 +17,7 @@ const INTENT_EVENT = {
 } as const;
 
 const INTENT_LABEL: Record<ProductHuntIntent, string> = {
-	badge: "Find Agent Orchestrator on Product Hunt",
+	badge: "Find Badri on Product Hunt",
 	upvote: "Upvote us on Product Hunt",
 };
 
@@ -51,7 +51,7 @@ export function ProductHuntBadge({
 			target="_blank"
 			rel="noopener noreferrer"
 			className={className}
-			aria-label="Agent Orchestrator on Product Hunt"
+			aria-label="Badri on Product Hunt"
 			onClick={() => track(INTENT_EVENT[intent])}
 		>
 			{children ?? INTENT_LABEL[intent]}

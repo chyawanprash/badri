@@ -6,7 +6,7 @@ import { GridCross } from "./components/GridCross";
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "News, updates, and insights from the Agent Orchestrator team about coding agent orchestration and developer productivity.",
+    "News, updates, and insights from the Badri team about coding agent orchestration and developer productivity.",
   alternates: {
     canonical: "/blog",
     types: {
@@ -14,17 +14,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Blog | Agent Orchestrator",
+    title: "Blog | Badri",
     description:
-      "News, updates, and insights from the Agent Orchestrator team about coding agent orchestration and developer productivity.",
+      "News, updates, and insights from the Badri team about coding agent orchestration and developer productivity.",
     url: "/blog",
     images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog | Agent Orchestrator",
+    title: "Blog | Badri",
     description:
-      "News, updates, and insights from the Agent Orchestrator team about coding agent orchestration and developer productivity.",
+      "News, updates, and insights from the Badri team about coding agent orchestration and developer productivity.",
     images: ["/og-image.png"],
   },
 };
@@ -57,7 +57,7 @@ export default async function BlogPage() {
             News & Updates
           </h1>
           <p className="text-muted-foreground mt-3 max-w-lg">
-            Insights from the Agent Orchestrator team about coding agent orchestration and
+            Insights from the Badri team about coding agent orchestration and
             developer productivity.
           </p>
 

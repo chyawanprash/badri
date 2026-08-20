@@ -45,7 +45,7 @@ export const themeListings: ThemeListing[] = [
 		author: "GitHub (primer/github-vscode-theme)",
 		submittedBy: "tkcel",
 		description:
-			"A GitHub-inspired dark theme adapted for Agent Orchestrator with strong blue, amber, and green contrast.",
+			"A GitHub-inspired dark theme adapted for Badri with strong blue, amber, and green contrast.",
 		addedOn: "March 26, 2026",
 		source: {
 			label: "Download",
@@ -81,7 +81,7 @@ export const themeListings: ThemeListing[] = [
 		type: "dark",
 		author: "Catppuccin",
 		submittedBy: "tamarazuk",
-		description: "The Mocha variant from the Catppuccin theme PR for Agent Orchestrator.",
+		description: "The Mocha variant from the Catppuccin theme PR for Badri.",
 		addedOn: "March 21, 2026",
 		source: {
 			label: "Download",
@@ -118,7 +118,7 @@ export const themeListings: ThemeListing[] = [
 		author: "Catppuccin",
 		submittedBy: "tamarazuk",
 		description:
-			"The Macchiato variant from the Catppuccin theme PR for Agent Orchestrator.",
+			"The Macchiato variant from the Catppuccin theme PR for Badri.",
 		addedOn: "March 21, 2026",
 		source: {
 			label: "Download",
@@ -155,7 +155,7 @@ export const themeListings: ThemeListing[] = [
 		author: "Catppuccin",
 		submittedBy: "tamarazuk",
 		description:
-			"The Frappé variant from the Catppuccin theme PR for Agent Orchestrator.",
+			"The Frappé variant from the Catppuccin theme PR for Badri.",
 		addedOn: "March 21, 2026",
 		source: {
 			label: "Download",
@@ -191,7 +191,7 @@ export const themeListings: ThemeListing[] = [
 		type: "light",
 		author: "Catppuccin",
 		submittedBy: "tamarazuk",
-		description: "The Latte variant from the Catppuccin theme PR for Agent Orchestrator.",
+		description: "The Latte variant from the Catppuccin theme PR for Badri.",
 		addedOn: "March 21, 2026",
 		source: {
 			label: "Download",
@@ -225,7 +225,7 @@ export const themeListings: ThemeListing[] = [
 		slug: "ember",
 		name: "Ember",
 		type: "dark",
-		author: "Agent Orchestrator",
+		author: "Badri",
 		submittedBy: "AviPeltz",
 		description:
 			"The standalone Ember theme introduced before its palette became the default Dark theme.",
@@ -234,7 +234,7 @@ export const themeListings: ThemeListing[] = [
 			label: "Download",
 			href: "/marketplace/themes/ember.json",
 		},
-		tags: ["Agent Orchestrator", "Dark", "Warm"],
+		tags: ["Badri", "Dark", "Warm"],
 		ui: {
 			background: "#151110",
 			foreground: "#eae8e6",

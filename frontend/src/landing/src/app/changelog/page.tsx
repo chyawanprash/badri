@@ -9,7 +9,7 @@ import { ChangelogEntry } from "./components/ChangelogEntry";
 export const metadata: Metadata = {
   title: "Changelog",
   description:
-    "The latest updates, improvements, and new features in Agent Orchestrator.",
+    "The latest updates, improvements, and new features in Badri.",
   alternates: {
     canonical: "/changelog",
     types: {
@@ -17,17 +17,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Changelog | Agent Orchestrator",
+    title: "Changelog | Badri",
     description:
-      "The latest updates, improvements, and new features in Agent Orchestrator.",
+      "The latest updates, improvements, and new features in Badri.",
     url: "/changelog",
     images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Changelog | Agent Orchestrator",
+    title: "Changelog | Badri",
     description:
-      "The latest updates, improvements, and new features in Agent Orchestrator.",
+      "The latest updates, improvements, and new features in Badri.",
     images: ["/og-image.png"],
   },
 };
@@ -58,7 +58,7 @@ export default async function ChangelogPage() {
             What's New
           </h1>
           <p className="text-muted-foreground mt-3 max-w-lg">
-            The latest updates, improvements, and new features in Agent Orchestrator.
+            The latest updates, improvements, and new features in Badri.
             Updated weekly. For detailed release notes, see{" "}
             <a
               href={`${COMPANY.GITHUB_URL}/releases`}

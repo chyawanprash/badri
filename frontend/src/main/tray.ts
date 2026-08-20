@@ -67,7 +67,7 @@ export function createTrayController(options: TrayControllerOptions): TrayContro
 	const render = () => {
 		const count = sessions.length;
 		tray.setTitle(count > 0 ? String(count) : "");
-		tray.setToolTip(count > 0 ? tPlural("tray.attentionTooltip", count) : "Agent Orchestrator");
+		tray.setToolTip(count > 0 ? tPlural("tray.attentionTooltip", count) : "Badri");
 
 		const items: MenuItemConstructorOptions[] = [];
 		if (count === 0) {

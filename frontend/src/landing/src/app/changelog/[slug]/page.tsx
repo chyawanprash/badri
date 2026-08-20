@@ -26,14 +26,14 @@ export async function generateMetadata({
     description: entry.description,
     alternates: { canonical: entry.url },
     openGraph: {
-      title: `${entry.title} | Agent Orchestrator`,
+      title: `${entry.title} | Badri`,
       description: entry.description,
       url: entry.url,
       images: ["/og-image.png"],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${entry.title} | Agent Orchestrator`,
+      title: `${entry.title} | Badri`,
       description: entry.description,
       images: ["/og-image.png"],
     },

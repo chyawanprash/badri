@@ -21,7 +21,7 @@ const approvedLiterals: Record<string, readonly string[]> = {
 	],
 	"components/CenterPane.tsx": ["px"],
 	"components/CreateProjectFlow.tsx": ["my-workspace/", "web-app", "main"],
-	"components/DaemonStartupLoader.tsx": ["Agent Orchestrator"],
+	"components/DaemonStartupLoader.tsx": ["Badri"],
 	"components/ProjectSettingsForm.tsx": [
 		"main", "ao",
 		"No workflow settings for scratch projects.",
@@ -29,7 +29,7 @@ const approvedLiterals: Record<string, readonly string[]> = {
 	],
 	"components/SessionFilesView.tsx": ["-&gt;"],
 	"components/SessionInspector.tsx": ["PR #"],
-	"components/Sidebar.tsx": ["Agent Orchestrator", "daemon"],
+	"components/Sidebar.tsx": ["Badri", "daemon"],
 	"components/WindowTitlebar.tsx": [
 		"Alt+F4",
 		"Ctrl+Z",

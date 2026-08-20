@@ -143,10 +143,10 @@ describe("global board first launch", () => {
 		);
 
 		expect(await screen.findByTestId("daemon-startup-loader")).toHaveClass("ao-startup-screen");
-		expect(screen.getByRole("status", { name: "Agent Orchestrator is starting" })).toBeInTheDocument();
-		expect(screen.getByText("Agent Orchestrator")).toBeInTheDocument();
+		expect(screen.getByRole("status", { name: "Badri is starting" })).toBeInTheDocument();
+		expect(screen.getByText("Badri")).toBeInTheDocument();
 		expect(screen.getByText("Starting local services")).toHaveAttribute("aria-hidden", "true");
-		expect(screen.queryByText("Add code to Agent Orchestrator")).not.toBeInTheDocument();
+		expect(screen.queryByText("Add code to Badri")).not.toBeInTheDocument();
 		expect(columnCount()).toBe(0);
 	});
 
@@ -154,7 +154,7 @@ describe("global board first launch", () => {
 		respondWith([], []);
 		renderBoard(<SessionsBoard />);
 
-		expect(await screen.findByText("Add code to Agent Orchestrator")).toBeInTheDocument();
+		expect(await screen.findByText("Add code to Badri")).toBeInTheDocument();
 		expect(screen.getByText("Clone a repository or open code that is already on this computer.")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Clone from Git" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Add a workspace folder" })).toBeInTheDocument();
@@ -199,7 +199,7 @@ describe("global board first launch", () => {
 		renderBoard(<SessionsBoard />);
 
 		expect(await screen.findByText("fix the bug")).toBeInTheDocument();
-		expect(screen.queryByText("Add code to Agent Orchestrator")).not.toBeInTheDocument();
+		expect(screen.queryByText("Add code to Badri")).not.toBeInTheDocument();
 		expect(columnCount()).toBe(4);
 	});
 
@@ -236,7 +236,7 @@ describe("project board with no sessions", () => {
 		// Board header + empty state each offer the pair; the orchestrator is primary in both.
 		expect(screen.getAllByRole("button", { name: "Spawn Orchestrator" }).length).toBeGreaterThan(0);
 		expect(screen.getAllByRole("button", { name: "New task" }).length).toBeGreaterThan(0);
-		expect(screen.queryByText("Add code to Agent Orchestrator")).not.toBeInTheDocument();
+		expect(screen.queryByText("Add code to Badri")).not.toBeInTheDocument();
 		expect(columnCount()).toBe(0);
 	});
 

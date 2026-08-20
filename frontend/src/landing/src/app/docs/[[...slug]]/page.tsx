@@ -24,7 +24,7 @@ export async function generateMetadata({
     description: doc.description,
     alternates: { canonical: doc.url },
     openGraph: {
-      title: `${doc.title} | Agent Orchestrator Docs`,
+      title: `${doc.title} | Badri Docs`,
       description: doc.description,
       url: doc.url,
       images: ["/og-image.png"],
@@ -58,7 +58,7 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
               </p>
             ) : (
               <p data-doc-description className="mt-3 max-w-2xl text-pretty text-muted-foreground">
-                Product docs for running, extending, and operating Agent Orchestrator.
+                Product docs for running, extending, and operating Badri.
               </p>
             )}
           </div>

@@ -13,7 +13,7 @@ const testimonialDisplay = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "Share Your AO Story",
   description:
-    "Submit your Agent Orchestrator testimonial for the AO website.",
+    "Submit your Badri testimonial for the AO website.",
 };
 
 const testimonialExamples = [

@@ -92,7 +92,7 @@ export function VideoSection() {
 							>
 								<Image
 									src="/mux-video-preview.jpg"
-									alt="Still from the Agent Orchestrator demo video"
+									alt="Still from the Badri demo video"
 									fill
 									sizes="(min-width: 1280px) 1280px, 100vw"
 									className="object-cover"

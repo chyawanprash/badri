@@ -29,7 +29,7 @@ const SECURITY_FEATURES: {
 		icon: <HiOutlineSignal className="w-5 h-5 text-foreground/70" />,
 		title: "Local Control",
 		description:
-			"Agent Orchestrator runs on your machine as a local daemon. Your code never leaves localhost.",
+			"Badri runs on your machine as a local daemon. Your code never leaves localhost.",
 	},
 ];
 

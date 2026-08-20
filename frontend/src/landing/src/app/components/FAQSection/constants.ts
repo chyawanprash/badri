@@ -20,7 +20,7 @@ export const FAQ_ITEMS: FAQItem[] = [
       "Each agent runs in its own isolated Git worktree, which means they can work on different branches or features simultaneously without conflicts. AO's orchestrator spawns workers, routes CI failures and review feedback to the right session, and lets you monitor the entire fleet from one board.",
   },
   {
-    question: "Is Agent Orchestrator free to use?",
+    question: "Is Badri free to use?",
     answer:
       "Yes. AO is free and open source under Apache 2.0. It runs as a local daemon on your machine, your code never leaves localhost. No account, no cloud, no credit card required.",
   },

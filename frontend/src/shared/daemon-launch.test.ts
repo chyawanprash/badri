@@ -58,13 +58,13 @@ describe("resolveDaemonLaunch", () => {
 			resolveDaemonLaunch(
 				{},
 				true,
-				"/Applications/Agent Orchestrator.app/Contents/Resources",
+				"/Applications/Badri.app/Contents/Resources",
 				"/app",
 				"/Users/alice",
 				"darwin",
 			),
 		).toEqual({
-			command: "/Applications/Agent Orchestrator.app/Contents/Resources/daemon/ao",
+			command: "/Applications/Badri.app/Contents/Resources/daemon/ao",
 			args: ["daemon"],
 			cwd: "/Users/alice/.ao",
 			shell: false,
@@ -122,7 +122,7 @@ describe("bundledDaemonIdentityError", () => {
 	});
 
 	it("compares executable paths outside AppImage", () => {
-		const command = "/opt/Agent Orchestrator/resources/daemon/ao";
+		const command = "/opt/Badri/resources/daemon/ao";
 		expect(bundledDaemonIdentityError({ executablePath: command }, command, undefined, samePath)).toBeNull();
 		expect(bundledDaemonIdentityError({ executablePath: "/other/ao" }, command, undefined, samePath)).toBe(
 			`Another AO daemon is already running from /other/ao; expected ${command}. Stop the other daemon before using this app.`,

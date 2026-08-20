@@ -1,21 +1,21 @@
 export const COMPANY = {
-  NAME: "Agent Orchestrator",
-  SHORT_NAME: "AO",
-  MARKETING_URL: "https://aoagents.dev",
-  DOCS_URL: "https://aoagents.dev/docs",
-  GITHUB_URL: "https://github.com/Untrivial-ai/agent-orchestrator",
-  GITHUB_REPO: "Untrivial-ai/agent-orchestrator",
-  STATUS_URL: "https://status.aoagents.dev",
-  TRUST_URL: "https://aoagents.dev/privacy/",
+  NAME: "Badri",
+  SHORT_NAME: "Badri",
+  MARKETING_URL: "https://github.com/chyawanprash/badri",
+  DOCS_URL: "https://github.com/chyawanprash/badri",
+  GITHUB_URL: "https://github.com/chyawanprash/badri",
+  GITHUB_REPO: "chyawanprash/badri",
+  STATUS_URL: "https://github.com/chyawanprash/badri",
+  TRUST_URL: "https://github.com/chyawanprash/badri",
   MAIL_TO: "mailto:prateek@untrivial.ai",
   X_URL: "https://x.com/aoagents",
   YOUTUBE_URL: "https://www.youtube.com/@itrytoohard",
   LINKEDIN_URL: "https://www.linkedin.com/company/agent-orchestrator/",
   DISCORD_URL: "https://discord.com/invite/UZv7JjxbwG",
   FOUNDERS_EMAIL: "prateek@untrivial.ai",
-  REPORT_ISSUE_URL: "https://github.com/Untrivial-ai/agent-orchestrator/issues/new",
+  REPORT_ISSUE_URL: "https://github.com/chyawanprash/badri/issues/new",
   LICENSE: "Apache-2.0",
-  LICENSE_URL: "https://github.com/Untrivial-ai/agent-orchestrator/blob/main/LICENSE",
+  LICENSE_URL: "https://github.com/chyawanprash/badri/blob/main/LICENSE",
 } as const;
 
 export const THEME_STORAGE_KEY = "ao-theme";
@@ -29,7 +29,7 @@ export const PLATFORMS = {
   LINUX: "linux",
 } as const;
 
-export const GITHUB_STARS_URL = "https://api.github.com/repos/Untrivial-ai/agent-orchestrator";
+export const GITHUB_STARS_URL = "https://api.github.com/repos/chyawanprash/badri";
 
 // macOS points at the .dmg: this is rollout step 6 of issue #3267, taken once the
 // release conductor started publishing a signed, notarized dmg on the stable
@@ -47,10 +47,10 @@ export const GITHUB_STARS_URL = "https://api.github.com/repos/Untrivial-ai/agent
 // ever break, check that the newest non-prerelease release has both files rather
 // than assuming the pipeline is broken. The download page itself is resilient
 // here: it reads the live release list and falls back to the zip.
-export const DOWNLOAD_URL_MAC_ARM64 = "https://github.com/Untrivial-ai/agent-orchestrator/releases/latest/download/agent-orchestrator-darwin-arm64.dmg";
-export const DOWNLOAD_URL_MAC_X64 = "https://github.com/Untrivial-ai/agent-orchestrator/releases/latest/download/agent-orchestrator-darwin-x64.dmg";
-export const DOWNLOAD_URL_WINDOWS = "https://github.com/Untrivial-ai/agent-orchestrator/releases/latest/download/agent-orchestrator-win32-x64.exe";
-export const DOWNLOAD_URL_LINUX = "https://github.com/Untrivial-ai/agent-orchestrator/releases/latest/download/agent-orchestrator-linux-x64.AppImage";
+export const DOWNLOAD_URL_MAC_ARM64 = "https://github.com/chyawanprash/badri/releases/latest/download/badri-darwin-arm64.dmg";
+export const DOWNLOAD_URL_MAC_X64 = "https://github.com/chyawanprash/badri/releases/latest/download/badri-darwin-x64.dmg";
+export const DOWNLOAD_URL_WINDOWS = "https://github.com/chyawanprash/badri/releases/latest/download/badri-win32-x64.exe";
+export const DOWNLOAD_URL_LINUX = "https://github.com/chyawanprash/badri/releases/latest/download/badri-linux-x64.AppImage";
 
 // AO Mobile. iOS ships as a TestFlight beta — the same link the desktop app's
 // Connect Mobile panel opens (frontend/src/renderer/components/settings/
@@ -66,7 +66,7 @@ export const ANDROID_TESTER_GROUP_URL =
 
 /** Google Play page where an eligible Group member opts in and installs. */
 export const ANDROID_TEST_OPT_IN_URL =
-  "https://play.google.com/apps/testing/aoagents.dev";
+  "https://play.google.com/apps/testing/github.com/chyawanprash/badri";
 
 export const AGENT_HARNESSES = 24;
 export const TAGLINE = "Stop babysitting agents. Start merging real work.";
