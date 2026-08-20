@@ -96,7 +96,7 @@ import { keepDaemonAlive, shouldLinkOnAttach } from "./main/daemon-owner";
 import { readMigrationState, updateMigration, writeAppStateMarker, type MigrationState } from "./main/app-state";
 import { isAllowedAppExternalURL, openAllowedAppExternalURL } from "./main/external-open";
 import { shouldSignalAttention, shouldToast } from "./main/notification-signals";
-import { buildWindowsAppMenuTemplate } from "./main/menu";
+import { buildAppMenuTemplate, buildWindowsAppMenuTemplate } from "./main/menu";
 import { ancestorRepositorySetupWarning, scanImportFolder } from "./main/import-folder-scan";
 import { parseOpenFolderPathArg } from "./main/open-folder-arg";
 
@@ -346,15 +346,19 @@ function appendDaemonOutput(text: string): void {
 // out of sight, but the roles keep their accelerators alive (Reload, zoom, full
 // screen, edit commands). DevTools uses the AO browser toggle so the focused
 // Browser panel opens the same native Chromium surface as the toolbar.
+function toggleDevToolsForFocusedPane(): void {
+	const fallback = () => getShellWebContents()?.toggleDevTools();
+	void browserViewHost?.toggleDevToolsForLastFocused().then((state) => {
+		if (!state) fallback();
+	}).catch(fallback);
+}
+
 function buildWindowsAppMenu(): Menu {
-	return Menu.buildFromTemplate(
-		buildWindowsAppMenuTemplate(() => {
-			const fallback = () => getShellWebContents()?.toggleDevTools();
-			void browserViewHost?.toggleDevToolsForLastFocused().then((state) => {
-				if (!state) fallback();
-			}).catch(fallback);
-		}),
-	);
+	return Menu.buildFromTemplate(buildWindowsAppMenuTemplate(toggleDevToolsForFocusedPane));
+}
+
+function buildNativeAppMenu(isMac: boolean): Menu {
+	return Menu.buildFromTemplate(buildAppMenuTemplate(isMac, "Agent Orchestrator", toggleDevToolsForFocusedPane));
 }
 
 async function disposeBrowserViewHost(): Promise<void> {
@@ -437,10 +441,15 @@ async function createWindowInternal(): Promise<void> {
 	// menu bar is hidden (autoHideMenuBar above). The role-based menu is still
 	// installed so its accelerators keep working and act on the focused pane;
 	// setMenuBarVisibility(false) keeps the strip itself out of view. macOS/Linux
-	// keep their native menus.
+	// show the menu bar, but still need an explicit menu: Electron's
+	// auto-generated default menu resolves devtools/reload/etc. roles against
+	// BrowserWindow.getFocusedWindow(), which is always undefined for this
+	// app's BaseWindow-based window, crashing on click.
 	if (process.platform === "win32") {
 		Menu.setApplicationMenu(buildWindowsAppMenu());
 		mainWindow.setMenuBarVisibility(false);
+	} else {
+		Menu.setApplicationMenu(buildNativeAppMenu(process.platform === "darwin"));
 	}
 
 	// Harden navigation: never let renderer/terminal content open in-app windows or
