@@ -1,7 +1,19 @@
+
 <div align="center">
   <img src="assets/badri-logo.svg" alt="Agent Orchestrator" width="144" height="144" />
 
 ### Agent Orchestrator
+
+
+
+
+https://github.com/user-attachments/assets/14371955-5139-4aab-a5f5-209470949463
+
+
+
+
+
+
 
 #### Plan, run, and supervise coding agents from one place.
 
