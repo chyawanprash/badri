@@ -59,8 +59,16 @@ jobs:
 
       - name: Verify Cloud contract and client
         run: |
-          npm run generate
-          git diff --exit-code -- src/schema.ts
+          # contracts/cloud/openapi.yaml lives in the private ao-cloud repo
+          # (see .gitmodules); forks without access to it can't regenerate or
+          # drift-check src/schema.ts, so fall back to verifying the
+          # already-committed schema still typechecks/builds.
+          if [ -f ../../contracts/cloud/openapi.yaml ]; then
+            npm run generate
+            git diff --exit-code -- src/schema.ts
+          else
+            echo "contracts/cloud/openapi.yaml not present (private submodule unavailable) — skipping regenerate/drift check"
+          fi
           npm run typecheck
           npm test
           npm pack --dry-run
