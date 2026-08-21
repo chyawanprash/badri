@@ -8,7 +8,15 @@ export default defineConfig({
 			fileName: "index",
 		},
 		rollupOptions: {
-			external: ["react", "react/jsx-runtime", "react-dom", "motion/react"],
+			external: [
+				"react",
+				"react/jsx-runtime",
+				"react-dom",
+				"motion/react",
+				"@dnd-kit/core",
+				"@dnd-kit/sortable",
+				"@dnd-kit/utilities",
+			],
 		},
 	},
 });

@@ -5,10 +5,28 @@ import {
 	startTransition,
 	useEffect,
 	useState,
+	type CSSProperties,
 	type HTMLAttributes,
 	type ReactElement,
 	type ReactNode,
 } from "react";
+import {
+	DndContext,
+	KeyboardSensor,
+	PointerSensor,
+	closestCenter,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	arrayMove,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { motion, useReducedMotion } from "motion/react";
 import type { ExternalLinkComponent } from "./external-link";
 import { ChevronIcon, GitBranchIcon } from "./icons";
@@ -198,11 +216,11 @@ function BoardColumnView<TSession extends BoardSessionPresentation>({
 				<span className="ml-auto font-mono text-2xs leading-none text-passive">{sessions.length}</span>
 			</div>
 			<div className="board-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-3">
-				<div className="flex min-h-full flex-col gap-2.5">
-					{sessions.map((session) => (
-						<Fragment key={session.id}>{renderSessionCard(session)}</Fragment>
-					))}
-				</div>
+				<DraggableSessionList
+					className="flex min-h-full flex-col gap-2.5"
+					renderSessionCard={renderSessionCard}
+					sessions={sessions}
+				/>
 			</div>
 		</section>
 	);
@@ -302,11 +320,11 @@ function SplitLaneColumnView<TSession extends BoardSessionPresentation>({
 							className={cn("flex flex-col", showSecondary ? "flex-none pb-3" : "flex-1")}
 							role="region"
 						>
-							<div className="flex flex-col gap-2.5">
-								{primarySessions.map((session) => (
-									<Fragment key={session.id}>{renderSessionCard(session)}</Fragment>
-								))}
-							</div>
+							<DraggableSessionList
+								className="flex flex-col gap-2.5"
+								renderSessionCard={renderSessionCard}
+								sessions={primarySessions}
+							/>
 						</div>
 					) : null}
 					{showSecondary ? (
@@ -378,11 +396,78 @@ function SecondaryLaneSection<TSession extends BoardSessionPresentation>({
 				</div>
 				<span className="ml-auto font-mono text-2xs leading-none text-passive">{sessions.length}</span>
 			</div>
-			<div className="flex flex-col gap-2.5 pt-3">
-				{sessions.map((session) => (
-					<Fragment key={session.id}>{renderSessionCard(session)}</Fragment>
-				))}
-			</div>
+			<DraggableSessionList
+				className="flex flex-col gap-2.5 pt-3"
+				renderSessionCard={renderSessionCard}
+				sessions={sessions}
+			/>
+		</div>
+	);
+}
+
+/**
+ * Drag-to-reorder within a single column or lane. Session status (and thus
+ * which column/lane a card belongs to) is derived server-side, not a client
+ * setting, so cards cannot be dropped across lists — only reordered within
+ * one. Order is client-side only and resets on remount (e.g. project switch).
+ */
+function DraggableSessionList<TSession extends BoardSessionPresentation>({
+	className,
+	renderSessionCard,
+	sessions,
+}: {
+	className: string;
+	renderSessionCard: (session: TSession) => ReactNode;
+	sessions: TSession[];
+}) {
+	const [order, setOrder] = useState<string[]>([]);
+	const byId = new Map(sessions.map((session) => [session.id, session]));
+	const known = order.filter((id) => byId.has(id));
+	const rest = sessions.filter((session) => !known.includes(session.id));
+	const ordered = [...known.map((id) => byId.get(id) as TSession), ...rest];
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+	);
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+		if (!over || active.id === over.id) return;
+		const ids = ordered.map((session) => session.id);
+		const oldIndex = ids.indexOf(String(active.id));
+		const newIndex = ids.indexOf(String(over.id));
+		if (oldIndex === -1 || newIndex === -1) return;
+		setOrder(arrayMove(ids, oldIndex, newIndex));
+	};
+
+	return (
+		<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+			<SortableContext items={ordered.map((session) => session.id)} strategy={verticalListSortingStrategy}>
+				<div className={className}>
+					{ordered.map((session) => (
+						<SortableSessionCard id={session.id} key={session.id}>
+							{renderSessionCard(session)}
+						</SortableSessionCard>
+					))}
+				</div>
+			</SortableContext>
+		</DndContext>
+	);
+}
+
+function SortableSessionCard({ children, id }: { children: ReactNode; id: string }) {
+	const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({ id });
+	const style: CSSProperties = {
+		opacity: isDragging ? 0.4 : undefined,
+		position: "relative",
+		transform: CSS.Transform.toString(transform),
+		transition,
+		zIndex: isDragging ? 1 : undefined,
+	};
+	return (
+		<div className="touch-none" ref={setNodeRef} style={style} {...attributes} {...listeners}>
+			{children}
 		</div>
 	);
 }

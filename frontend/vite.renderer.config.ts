@@ -85,7 +85,10 @@ const productUiReactBoundary: Plugin = {
 			source === "react-dom" ||
 			source.startsWith("react-dom/") ||
 			source === "motion" ||
-			source.startsWith("motion/");
+			source.startsWith("motion/") ||
+			source === "@dnd-kit/core" ||
+			source === "@dnd-kit/sortable" ||
+			source === "@dnd-kit/utilities";
 		if (!remap) {
 			return null;
 		}
