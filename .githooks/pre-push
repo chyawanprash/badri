@@ -52,12 +52,20 @@ fi
 
 # --- typechecks (fast, cached) ---
 if [ -f frontend/package.json ]; then
-	note "frontend typecheck"
-	(cd frontend && npm run typecheck) || bad "frontend typecheck failed"
+	if [ ! -d frontend/node_modules ]; then
+		bad "frontend/node_modules is missing — run: (cd frontend && npm install)"
+	else
+		note "frontend typecheck"
+		(cd frontend && npm run typecheck) || bad "frontend typecheck failed"
+	fi
 fi
 if [ -f packages/product-ui/package.json ]; then
-	note "product-ui typecheck"
-	(cd packages/product-ui && npm run typecheck) || bad "product-ui typecheck failed"
+	if [ ! -d packages/product-ui/node_modules ]; then
+		bad "packages/product-ui/node_modules is missing — run: (cd packages/product-ui && npm install)"
+	else
+		note "product-ui typecheck"
+		(cd packages/product-ui && npm run typecheck) || bad "product-ui typecheck failed"
+	fi
 fi
 
 echo ""
