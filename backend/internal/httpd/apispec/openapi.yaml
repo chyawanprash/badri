@@ -4042,6 +4042,46 @@ paths:
       summary: Resume an exited agent in its existing session
       tags:
       - sessions
+  /api/v1/sessions/{sessionId}/revert:
+    post:
+      operationId: revertSession
+      parameters:
+      - description: Session identifier, e.g. project-1.
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          description: Session identifier, e.g. project-1.
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevertSessionResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Conflict
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+      summary: Discard uncommitted changes in a live session's worktree, resetting
+        it to HEAD
+      tags:
+      - sessions
   /api/v1/sessions/{sessionId}/reviewer:
     put:
       operationId: setSessionReviewer
@@ -5339,6 +5379,8 @@ components:
       properties:
         data:
           type: string
+        isContext:
+          type: boolean
         mimeType:
           type: string
       required:
@@ -6406,6 +6448,9 @@ components:
           type: string
         projectId:
           type: string
+        title:
+          maxLength: 20
+          type: string
       required:
       - projectId
       - brief
@@ -7380,6 +7425,16 @@ components:
       - sessionId
       - resumeMode
       - session
+      type: object
+    RevertSessionResponse:
+      properties:
+        ok:
+          type: boolean
+        sessionId:
+          type: string
+      required:
+      - ok
+      - sessionId
       type: object
     ReviewRun:
       properties:

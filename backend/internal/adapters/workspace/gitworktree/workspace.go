@@ -700,6 +700,24 @@ func (w *Workspace) AddExclude(ctx context.Context, info ports.WorkspaceInfo, pa
 	return nil
 }
 
+// DiscardUncommitted resets tracked files to HEAD (undoing staged and
+// unstaged edits) and removes untracked files/directories, leaving the
+// worktree exactly as a fresh checkout of HEAD would. It never moves HEAD, so
+// existing commits on the session's branch are untouched.
+func (w *Workspace) DiscardUncommitted(ctx context.Context, info ports.WorkspaceInfo) error {
+	path, err := w.validateManagedPath(info.Path)
+	if err != nil {
+		return err
+	}
+	if _, err := w.run(ctx, w.binary, resetHardHeadArgs(path)...); err != nil {
+		return fmt.Errorf("gitworktree: DiscardUncommitted reset %q: %w", path, err)
+	}
+	if _, err := w.run(ctx, w.binary, cleanUntrackedArgs(path)...); err != nil {
+		return fmt.Errorf("gitworktree: DiscardUncommitted clean %q: %w", path, err)
+	}
+	return nil
+}
+
 const (
 	maxObservedWorkspaceChanges = 500
 	maxObservedWorkspaceCommits = 20

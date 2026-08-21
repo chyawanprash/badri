@@ -99,7 +99,7 @@ describe("NewTaskDialog", () => {
 		expect(await screen.findByLabelText("Model")).toHaveValue("");
 		expect(screen.getByRole("button", { name: "Add file" })).toBeInTheDocument();
 		expect(screen.getByLabelText("Task")).toHaveAttribute("placeholder", "e.g. Fix the flaky checkout test (optional)…");
-		expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
+		expect(screen.getByLabelText("Title")).toHaveAttribute("placeholder", "Fix WebGL fallback renderer");
 		expect(screen.queryByLabelText("Branch")).not.toBeInTheDocument();
 	});
 

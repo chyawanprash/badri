@@ -98,6 +98,32 @@ func TestDelegatedTaskDisplayName(t *testing.T) {
 	}
 }
 
+func TestDelegateTaskWithExplicitTitleSkipsRefinement(t *testing.T) {
+	st := newFakeStore()
+	st.projects["ao"] = domain.ProjectRecord{ID: "ao"}
+	st.sessions["orch"] = domain.SessionRecord{ID: "orch", ProjectID: "ao", Kind: domain.KindOrchestrator}
+	cmd := &fakeCommander{}
+
+	out, err := (&Service{store: st, manager: cmd, runBackground: runInline}).DelegateTask(
+		context.Background(),
+		DelegateTaskInput{ProjectID: "ao", Brief: "fix the bug", Title: "  Fix login bug  "},
+	)
+	if err != nil {
+		t.Fatalf("DelegateTask: %v", err)
+	}
+	if out.WorkerID != "mer-9" {
+		t.Fatalf("out = %#v, want worker mer-9", out)
+	}
+	if !cmd.spawned || cmd.spawnedCfg.DisplayName != "Fix login bug" {
+		t.Fatalf("spawn cfg = %#v, want display name %q", cmd.spawnedCfg, "Fix login bug")
+	}
+	// A user-supplied title is already final: it must not be silently
+	// overwritten by the background AI title refinement.
+	if len(cmd.ready) != 0 || len(cmd.sent) != 0 || len(cmd.resumed) != 0 {
+		t.Fatalf("explicit-title spawn contacted orchestrator: ready=%#v sent=%#v resumed=%#v", cmd.ready, cmd.sent, cmd.resumed)
+	}
+}
+
 func TestDelegateTaskStartsPromptlessWorkerWithoutRequestingTitle(t *testing.T) {
 	st := newFakeStore()
 	st.projects["ao"] = domain.ProjectRecord{ID: "ao"}

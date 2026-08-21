@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import {
+	BookOpenIcon as BookOpen,
 	FileTextIcon as FileText,
 	LoaderCircleIcon as Loader2,
 	PaperclipIcon as Paperclip,
@@ -84,7 +85,9 @@ export type TaskComposerSubmission = {
 };
 
 export type TaskComposerLabels = {
+	addContext: string;
 	addFile: string;
+	contextPlaceholder: string;
 	createAsTui: string;
 	removeFile: (name: string) => string;
 	runsWith: string;
@@ -92,6 +95,8 @@ export type TaskComposerLabels = {
 	starting: string;
 	task: string;
 	taskPlaceholder: string;
+	title: string;
+	titlePlaceholder: string;
 };
 
 export type TaskComposerViewProps = {
@@ -99,13 +104,21 @@ export type TaskComposerViewProps = {
 	attachments: TaskComposerAttachments;
 	autoFocusPrompt?: boolean;
 	canSubmit: boolean;
+	/**
+	 * Reference material (e.g. context.md/prd.md) for the agent to find on
+	 * disk. Kept separate from `attachments`: files here are never referenced
+	 * in the prompt text sent to the agent, only written into the worktree.
+	 */
+	context: TaskComposerAttachments;
 	labels: TaskComposerLabels;
 	model: Omit<TaskComposerModelControl, "id">;
 	onPromptChange: (value: string) => void;
+	onTitleChange: (value: string) => void;
 	prompt: string;
 	renderAgentControl: (control: TaskComposerAgentControl) => ReactNode;
 	renderModelControl: (control: TaskComposerModelControl) => ReactNode;
 	submission: TaskComposerSubmission;
+	title: string;
 };
 
 export function TaskComposerView({
@@ -113,18 +126,23 @@ export function TaskComposerView({
 	attachments,
 	autoFocusPrompt,
 	canSubmit,
+	context,
 	labels,
 	model,
 	onPromptChange,
+	onTitleChange,
 	prompt,
 	renderAgentControl,
 	renderModelControl,
 	submission,
+	title,
 }: TaskComposerViewProps) {
+	const titleId = useId();
 	const promptId = useId();
 	const modelId = useId();
 	const agentId = useId();
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const contextFileInputRef = useRef<HTMLInputElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 
 	const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -165,13 +183,25 @@ export function TaskComposerView({
 				if (!(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) setIsDragging(false);
 			}}
 		>
+			<label className="sr-only" htmlFor={titleId}>
+				{labels.title}
+			</label>
+			<input
+				id={titleId}
+				type="text"
+				className="w-full bg-transparent px-4 pt-3 text-sm font-medium text-foreground outline-none placeholder:text-passive"
+				placeholder={labels.titlePlaceholder}
+				value={title}
+				onChange={(event) => onTitleChange(event.target.value)}
+			/>
+
 			<label className="sr-only" htmlFor={promptId}>
 				{labels.task}
 			</label>
 			<textarea
 				id={promptId}
 				autoFocus={autoFocusPrompt}
-				className="min-h-(--size-composer-prompt-min) w-full resize-none bg-transparent px-4 pb-3 pt-4 text-md leading-relaxed text-foreground outline-none placeholder:text-passive"
+				className="min-h-(--size-composer-prompt-min) w-full resize-none bg-transparent px-4 pb-3 pt-1 text-md leading-relaxed text-foreground outline-none placeholder:text-passive"
 				placeholder={labels.taskPlaceholder}
 				value={prompt}
 				onChange={(event) => onPromptChange(event.target.value)}
@@ -226,6 +256,44 @@ export function TaskComposerView({
 				<p className="px-4 pb-2 text-caption text-destructive" role="alert">{attachments.error}</p>
 			)}
 
+			{context.items.length > 0 && (
+				<ul className="scrollbar-none flex max-h-24 flex-wrap gap-2 overflow-y-auto px-3 pb-2">
+					{context.items.map((file) => (
+						<li
+							key={file.id}
+							className="flex min-w-0 max-w-48 items-center gap-2 rounded-md bg-surface px-1.5 py-1 text-xs text-foreground"
+						>
+							<BookOpen
+								className="size-7 shrink-0 rounded bg-input/60 p-1.5 text-muted-foreground"
+								aria-hidden="true"
+							/>
+							<span className="min-w-0 flex-1 truncate font-medium">{file.name}</span>
+							<button
+								type="button"
+								className="grid size-5 shrink-0 place-items-center rounded text-muted-foreground transition-colors hover:bg-border hover:text-foreground"
+								aria-label={labels.removeFile(file.name)}
+								onClick={() => context.onRemove(file.id)}
+							>
+								<X className="size-icon-sm" aria-hidden="true" />
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
+			<input
+				ref={contextFileInputRef}
+				type="file"
+				multiple
+				className="hidden"
+				onChange={(event) => {
+					if (event.target.files) context.onAddFiles(Array.from(event.target.files));
+					event.target.value = "";
+				}}
+			/>
+			{context.error && (
+				<p className="px-4 pb-2 text-caption text-destructive" role="alert">{context.error}</p>
+			)}
+
 			{(submission.error || submission.modelWarning) && (
 				<div className="px-3 pb-2">
 					{submission.error && (
@@ -269,6 +337,15 @@ export function TaskComposerView({
 					onClick={() => fileInputRef.current?.click()}
 				>
 					<Paperclip className="size-icon-base" aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					title={labels.contextPlaceholder}
+					className="grid size-(--size-settings-action-height) place-items-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					aria-label={labels.addContext}
+					onClick={() => contextFileInputRef.current?.click()}
+				>
+					<BookOpen className="size-icon-base" aria-hidden="true" />
 				</button>
 				<button
 					type="submit"

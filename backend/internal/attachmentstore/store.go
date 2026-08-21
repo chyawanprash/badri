@@ -398,6 +398,8 @@ func validateName(name string) error {
 		remainder = after
 	} else if after, ok := strings.CutPrefix(name, "image-"); ok {
 		remainder = after
+	} else if after, ok := strings.CutPrefix(name, "context-"); ok {
+		remainder = after
 	} else {
 		return fmt.Errorf("invalid attachment name %q", name)
 	}

@@ -64,6 +64,7 @@ type commander interface {
 	RestoreWithMode(ctx context.Context, id domain.SessionID) (sessionmanager.RestoreResult, error)
 	ResumeAgentWithMode(ctx context.Context, id domain.SessionID) (sessionmanager.RestoreResult, error)
 	Kill(ctx context.Context, id domain.SessionID) (bool, error)
+	RevertUncommitted(ctx context.Context, id domain.SessionID) error
 	RetireForReplacement(ctx context.Context, id domain.SessionID) error
 	WaitForMessageDeliveryReady(ctx context.Context, id domain.SessionID) error
 	Send(ctx context.Context, id domain.SessionID, message string, attachment *ports.SpawnAttachment) error
@@ -623,6 +624,12 @@ func restoreModeView(mode sessionmanager.RestoreMode) RestoreModeView {
 func (s *Service) Kill(ctx context.Context, id domain.SessionID) (bool, error) {
 	freed, err := s.manager.Kill(ctx, id)
 	return freed, toAPIError(err)
+}
+
+// RevertUncommitted delegates discarding a live session's uncommitted
+// worktree changes to the internal manager.
+func (s *Service) RevertUncommitted(ctx context.Context, id domain.SessionID) error {
+	return toAPIError(s.manager.RevertUncommitted(ctx, id))
 }
 
 // RollbackSpawn deletes a seed-state session row, or falls back to a Kill if

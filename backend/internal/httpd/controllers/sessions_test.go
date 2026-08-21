@@ -61,6 +61,8 @@ type fakeSessionService struct {
 	handoffSource       domain.AgentGenerationID
 	autoInjectCISession domain.SessionID
 	autoInjectCIEnabled bool
+	revertErr           error
+	revertedSessionID   domain.SessionID
 }
 
 type fakeInterfaceTransitionSessionService struct {
@@ -406,6 +408,14 @@ func (f *fakeSessionService) Kill(_ context.Context, id domain.SessionID) (bool,
 	s.Status = domain.StatusTerminated
 	f.sessions[id] = s
 	return true, nil
+}
+
+func (f *fakeSessionService) RevertUncommitted(_ context.Context, id domain.SessionID) error {
+	if f.revertErr != nil {
+		return f.revertErr
+	}
+	f.revertedSessionID = id
+	return nil
 }
 
 func (f *fakeSessionService) RollbackSpawn(_ context.Context, id domain.SessionID) (sessionsvc.RollbackOutcome, error) {
@@ -2086,6 +2096,30 @@ func TestSessionsAPI_KillLeavesPreviewTeardownToSessionLifecycle(t *testing.T) {
 	}
 	if managed.stopCalls != 0 {
 		t.Fatalf("controller duplicated managed preview teardown: stop calls = %d", managed.stopCalls)
+	}
+}
+
+func TestSessionsAPI_Revert(t *testing.T) {
+	svc := newFakeSessionService()
+	srv := newSessionTestServer(t, svc)
+
+	body, status, _ := doRequest(t, srv, http.MethodPost, "/api/v1/sessions/ao-1/revert", "")
+	if status != http.StatusOK || !containsAll(body, `"ok":true`, `"sessionId":"ao-1"`) {
+		t.Fatalf("revert = %d body=%s", status, body)
+	}
+	if svc.revertedSessionID != "ao-1" {
+		t.Fatalf("revert did not reach the service: got %q", svc.revertedSessionID)
+	}
+}
+
+func TestSessionsAPI_RevertSurfacesServiceError(t *testing.T) {
+	svc := newFakeSessionService()
+	svc.revertErr = apierr.Conflict("SESSION_TERMINATED", "Session is terminated", nil)
+	srv := newSessionTestServer(t, svc)
+
+	body, status, _ := doRequest(t, srv, http.MethodPost, "/api/v1/sessions/ao-1/revert", "")
+	if status != http.StatusConflict || !containsAll(body, `"SESSION_TERMINATED"`) {
+		t.Fatalf("revert error = %d body=%s", status, body)
 	}
 }
 

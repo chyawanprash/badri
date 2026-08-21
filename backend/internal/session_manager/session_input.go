@@ -18,6 +18,7 @@ const (
 	agentOperationKill    agentOperationKind = "kill"
 	agentOperationRestore agentOperationKind = "restore"
 	agentOperationRetire  agentOperationKind = "retire"
+	agentOperationRevert  agentOperationKind = "revert"
 )
 
 var errAgentOperationInProgress = errors.New("session: another exclusive operation is in progress")

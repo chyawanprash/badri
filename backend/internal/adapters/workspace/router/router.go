@@ -130,6 +130,16 @@ func (w *Workspace) AddExclude(ctx context.Context, info ports.WorkspaceInfo, pa
 	return adapter.AddExclude(ctx, info, patterns...)
 }
 
+// DiscardUncommitted delegates discarding a worktree's uncommitted changes to
+// the project-appropriate workspace adapter.
+func (w *Workspace) DiscardUncommitted(ctx context.Context, info ports.WorkspaceInfo) error {
+	adapter, err := w.adapterForProject(ctx, info.ProjectID)
+	if err != nil {
+		return err
+	}
+	return adapter.DiscardUncommitted(ctx, info)
+}
+
 // ObserveWorkspace delegates the read-only handoff snapshot to the selected
 // project adapter. Adapters that cannot observe state return a clear error
 // instead of fabricating repository facts.

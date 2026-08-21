@@ -41,6 +41,32 @@ func TestWriteSpawnAttachments(t *testing.T) {
 	}
 }
 
+func TestWriteSpawnAttachmentsContextFilesAreNotReferenced(t *testing.T) {
+	dir := t.TempDir()
+	m := New(Deps{DataDir: t.TempDir()})
+	refs, err := m.writeSpawnAttachments(context.Background(), "ao-1", dir, []ports.SpawnAttachment{
+		{Ext: ".md", Data: []byte("# Context"), Context: true},
+		{Ext: ".png", Data: []byte("screenshot")},
+	})
+	if err != nil {
+		t.Fatalf("writeSpawnAttachments: %v", err)
+	}
+
+	// Only the ordinary (non-context) attachment is referenced — a context doc
+	// is written for the agent to find on disk, never announced in the prompt.
+	want := []string{".ao/attachments/attachment-2.png"}
+	if len(refs) != len(want) || refs[0] != want[0] {
+		t.Fatalf("refs = %v, want %v", refs, want)
+	}
+	got, readErr := os.ReadFile(filepath.Join(dir, ".ao", "attachments", "context-1.md"))
+	if readErr != nil {
+		t.Fatalf("read context-1.md: %v", readErr)
+	}
+	if string(got) != "# Context" {
+		t.Fatalf("context-1.md content = %q", got)
+	}
+}
+
 func TestStageAttachmentsUsesNeutralFileNames(t *testing.T) {
 	dir := t.TempDir()
 	dataDir := t.TempDir()

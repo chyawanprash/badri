@@ -1294,6 +1294,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sessions/{sessionId}/revert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discard uncommitted changes in a live session's worktree, resetting it to HEAD */
+        post: operations["revertSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sessions/{sessionId}/reviewer": {
         parameters: {
             query?: never;
@@ -1777,6 +1794,7 @@ export interface components {
         };
         AttachmentInput: {
             data: string;
+            isContext?: boolean;
             mimeType?: string;
         };
         BrowserCommandRequest: {
@@ -2166,6 +2184,7 @@ export interface components {
             mode?: "tui" | "chat";
             model?: string;
             projectId: string;
+            title?: string;
         };
         DelegateTaskResponse: {
             ok: boolean;
@@ -2550,6 +2569,10 @@ export interface components {
             /** @enum {string} */
             resumeMode: "native" | "saved_prompt" | "fresh";
             session: components["schemas"]["ControllersSessionView"];
+            sessionId: string;
+        };
+        RevertSessionResponse: {
+            ok: boolean;
             sessionId: string;
         };
         ReviewRun: {
@@ -8161,6 +8184,56 @@ export interface operations {
             };
             /** @description Not Implemented */
             501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    revertSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Session identifier, e.g. project-1. */
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevertSessionResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

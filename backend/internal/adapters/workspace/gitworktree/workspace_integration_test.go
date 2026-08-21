@@ -62,6 +62,63 @@ func TestWorkspaceIntegrationCreateRestoreDestroy(t *testing.T) {
 	}
 }
 
+func TestWorkspaceIntegrationDiscardUncommitted(t *testing.T) {
+	git := requireGit(t)
+	tmp := t.TempDir()
+	repo := setupOriginClone(t, git, tmp)
+	root := filepath.Join(tmp, "managed")
+	ws, err := New(Options{Binary: git, ManagedRoot: root, RepoResolver: StaticRepoResolver{"proj": repo}})
+	if err != nil {
+		t.Fatalf("new: %v", err)
+	}
+	ctx := context.Background()
+	info, err := ws.Create(ctx, ports.WorkspaceConfig{ProjectID: "proj", SessionID: "sess", Branch: "feature/one"})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	// Modify a tracked file, stage a new file, and leave an untracked file —
+	// covers unstaged, staged, and untracked uncommitted state in one pass.
+	if err := os.WriteFile(filepath.Join(info.Path, "README.md"), []byte("modified"), 0o600); err != nil {
+		t.Fatalf("modify tracked file: %v", err)
+	}
+	stagedPath := filepath.Join(info.Path, "staged.txt")
+	if err := os.WriteFile(stagedPath, []byte("staged"), 0o600); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	if _, err := ws.run(ctx, git, "-C", info.Path, "add", "staged.txt"); err != nil {
+		t.Fatalf("git add: %v", err)
+	}
+	untrackedPath := filepath.Join(info.Path, "untracked.txt")
+	if err := os.WriteFile(untrackedPath, []byte("untracked"), 0o600); err != nil {
+		t.Fatalf("write untracked file: %v", err)
+	}
+	if dirty, err := ws.isDirty(ctx, info.Path); err != nil || !dirty {
+		t.Fatalf("precondition: worktree dirty = %v, %v", dirty, err)
+	}
+
+	if err := ws.DiscardUncommitted(ctx, info); err != nil {
+		t.Fatalf("DiscardUncommitted: %v", err)
+	}
+
+	readme, err := os.ReadFile(filepath.Join(info.Path, "README.md"))
+	if err != nil {
+		t.Fatalf("read README.md: %v", err)
+	}
+	if string(readme) == "modified" {
+		t.Fatalf("tracked file edit was not discarded")
+	}
+	if _, err := os.Stat(stagedPath); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("staged.txt after discard stat err = %v, want not exist", err)
+	}
+	if _, err := os.Stat(untrackedPath); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("untracked.txt after discard stat err = %v, want not exist", err)
+	}
+	if dirty, err := ws.isDirty(ctx, info.Path); err != nil || dirty {
+		t.Fatalf("worktree dirty after discard = %v, %v", dirty, err)
+	}
+}
+
 func TestWorkspaceIntegrationRestoreExistingBranchDoesNotResolveDefault(t *testing.T) {
 	git := requireGit(t)
 	tmp := t.TempDir()

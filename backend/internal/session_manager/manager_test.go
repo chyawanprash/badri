@@ -755,6 +755,9 @@ type fakeWorkspace struct {
 	// set, is returned so best-effort handling can be exercised.
 	excludePatterns []string
 	addExcludeErr   error
+	// discardErr, when set, is returned by DiscardUncommitted.
+	discardErr   error
+	discardCalls int
 	// calls records the sequence of workspace method calls for ordering assertions.
 	calls []string
 	// sharedLog, when non-nil, receives entries alongside calls so ordering
@@ -937,6 +940,12 @@ func (w *fakeWorkspace) AddExclude(_ context.Context, info ports.WorkspaceInfo, 
 	w.calls = append(w.calls, "AddExclude:"+string(info.SessionID))
 	w.excludePatterns = append(w.excludePatterns, patterns...)
 	return w.addExcludeErr
+}
+
+func (w *fakeWorkspace) DiscardUncommitted(_ context.Context, info ports.WorkspaceInfo) error {
+	w.calls = append(w.calls, "DiscardUncommitted:"+string(info.SessionID))
+	w.discardCalls++
+	return w.discardErr
 }
 
 type loggingDestroyWorkspace struct {

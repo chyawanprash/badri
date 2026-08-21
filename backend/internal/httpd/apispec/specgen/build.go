@@ -247,6 +247,7 @@ var schemaNames = map[string]string{
 	"ControllersWorkspaceFileSummary":                     "WorkspaceFileSummary",
 	"ControllersWorkspaceFileResponse":                    "WorkspaceFileResponse",
 	"ControllersKillSessionResponse":                      "KillSessionResponse",
+	"ControllersRevertSessionResponse":                    "RevertSessionResponse",
 	"ControllersRollbackSessionResponse":                  "RollbackSessionResponse",
 	"ControllersSendSessionMessageRequest":                "SendSessionMessageRequest",
 	"ControllersSendSessionMessageResponse":               "SendSessionMessageResponse",
@@ -1777,6 +1778,17 @@ func sessionOperations() []operation {
 			pathParams: []any{controllers.SessionIDParam{}},
 			resps: []respUnit{
 				{http.StatusOK, controllers.KillSessionResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusConflict, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodPost, path: "/api/v1/sessions/{sessionId}/revert", id: "revertSession", tag: "sessions",
+			summary:    "Discard uncommitted changes in a live session's worktree, resetting it to HEAD",
+			pathParams: []any{controllers.SessionIDParam{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.RevertSessionResponse{}},
 				{http.StatusNotFound, envelope.APIError{}},
 				{http.StatusConflict, envelope.APIError{}},
 				{http.StatusInternalServerError, envelope.APIError{}},

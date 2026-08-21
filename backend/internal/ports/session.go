@@ -57,4 +57,9 @@ type SpawnAttachment struct {
 	// inferred from the attachment's declared MIME type, or ".bin" for unknown types.
 	Ext  string
 	Data []byte
+	// Context marks this as reference material (e.g. a context.md/prd.md) for
+	// the agent to find on disk, rather than a prompt attachment: it is
+	// written into the worktree but never referenced in the prompt text the
+	// agent receives.
+	Context bool
 }

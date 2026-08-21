@@ -212,6 +212,36 @@ describe("TaskComposer", () => {
 		expect(body.attachments?.[0].data.length).toBeGreaterThan(0);
 	});
 
+	it("sends the title separately and flags a context file so it isn't treated as a prompt attachment", async () => {
+		h.post.mockResolvedValueOnce({ data: { workerId: "sess-1" } });
+
+		const { container } = render(
+			<Wrap>
+				<TaskComposer projectId="proj-1" onCreated={vi.fn()} />
+			</Wrap>,
+		);
+
+		fireEvent.change(screen.getByRole("textbox", { name: "Title" }), { target: { value: "Fix login bug" } });
+		fireEvent.change(task(), { target: { value: "Investigate the failure" } });
+
+		const fileInputs = container.querySelectorAll('input[type="file"]');
+		expect(fileInputs).toHaveLength(2);
+		const contextFile = new File([new Uint8Array([1, 2, 3])], "context.md", { type: "text/markdown" });
+		fireEvent.change(fileInputs[1], { target: { files: [contextFile] } });
+		expect(await screen.findByText("context.md")).toBeInTheDocument();
+
+		fireEvent.click(screen.getByText("Start task"));
+
+		await waitFor(() => expect(h.post).toHaveBeenCalledTimes(1));
+		const body = h.post.mock.calls[0][1].body as {
+			title?: string;
+			attachments?: Array<{ mimeType: string; data: string; isContext?: boolean }>;
+		};
+		expect(body.title).toBe("Fix login bug");
+		expect(body.attachments).toHaveLength(1);
+		expect(body.attachments?.[0]).toMatchObject({ mimeType: "text/markdown", isContext: true });
+	});
+
 	it("waits for a selected file read before submitting", async () => {
 		h.post.mockResolvedValueOnce({ data: { workerId: "sess-1" } });
 		let finishRead!: () => void;

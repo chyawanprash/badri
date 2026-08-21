@@ -24,8 +24,12 @@ const (
 // may be empty to open an idle worker that the user can instruct later. Empty
 // RequestedAgent means the spawn uses the project's worker-agent default.
 type DelegateTaskInput struct {
-	ProjectID      domain.ProjectID
-	Brief          string
+	ProjectID domain.ProjectID
+	Brief     string
+	// Title, when set, names the worker directly instead of the provisional
+	// name AO would otherwise derive from Brief, and skips the background
+	// AI title refinement — a title the user typed is already final.
+	Title          string
 	RequestedAgent domain.AgentHarness
 	Model          string
 	RequestedMode  domain.SessionMode
@@ -64,7 +68,7 @@ func (s *Service) DelegateTask(ctx context.Context, in DelegateTaskInput) (Deleg
 		Kind:          domain.KindWorker,
 		Harness:       in.RequestedAgent,
 		Prompt:        prompt,
-		DisplayName:   delegatedTaskDisplayName(in.Brief),
+		DisplayName:   delegatedWorkerDisplayName(in.Title, in.Brief),
 		AgentConfig:   ports.AgentConfig{Model: strings.TrimSpace(in.Model)},
 		RequestedMode: in.RequestedMode,
 		Attachments:   in.Attachments,
@@ -76,7 +80,8 @@ func (s *Service) DelegateTask(ctx context.Context, in DelegateTaskInput) (Deleg
 	// The worker spawn is the commit point. Coordinator startup and title
 	// generation must never hold the new-task response open. A promptless worker
 	// stays idle with its provisional title until the user supplies instructions.
-	if prompt != "" {
+	// A user-supplied Title is already final and must not be overwritten.
+	if prompt != "" && strings.TrimSpace(in.Title) == "" {
 		s.refineDelegatedTaskTitleInBackground(worker.ID, in)
 	}
 	return DelegateTaskOutcome{WorkerID: worker.ID}, nil
@@ -155,6 +160,13 @@ func (s *Service) taskTitleOrchestrator(ctx context.Context, projectID domain.Pr
 		return "", fmt.Errorf("start project orchestrator: %w", err)
 	}
 	return orchestrator.ID, nil
+}
+
+func delegatedWorkerDisplayName(title, brief string) string {
+	if trimmed := strings.TrimSpace(title); trimmed != "" {
+		return trimmed
+	}
+	return delegatedTaskDisplayName(brief)
 }
 
 func delegatedTaskDisplayName(brief string) string {

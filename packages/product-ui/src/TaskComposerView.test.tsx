@@ -10,8 +10,12 @@ function viewProps(overrides: Partial<TaskComposerViewProps> = {}): TaskComposer
 		canSubmit: true,
 		prompt: "",
 		onPromptChange: vi.fn(),
+		title: "",
+		onTitleChange: vi.fn(),
 		labels: {
+			addContext: "Add context",
 			addFile: "Add file",
+			contextPlaceholder: "Add context (context.md/prd.md)",
 			createAsTui: "Create as Terminal UI",
 			removeFile: (name) => `Remove ${name}`,
 			runsWith: "Runs with",
@@ -19,6 +23,8 @@ function viewProps(overrides: Partial<TaskComposerViewProps> = {}): TaskComposer
 			starting: "Starting...",
 			task: "Task",
 			taskPlaceholder: "Describe the task (optional)…",
+			title: "Title",
+			titlePlaceholder: "Title (optional)",
 		},
 		agent: {
 			value: "codex",
@@ -47,6 +53,11 @@ function viewProps(overrides: Partial<TaskComposerViewProps> = {}): TaskComposer
 			onRefresh: vi.fn(),
 		},
 		attachments: {
+			items: [],
+			onAddFiles: vi.fn(),
+			onRemove: vi.fn(),
+		},
+		context: {
 			items: [],
 			onAddFiles: vi.fn(),
 			onRemove: vi.fn(),
@@ -140,6 +151,32 @@ describe("TaskComposerView", () => {
 			dataTransfer: { files: [file] },
 		});
 		expect(onAddFiles).toHaveBeenLastCalledWith([file]);
+	});
+
+	it("edits the title and forwards context files separately from attachments", () => {
+		const onTitleChange = vi.fn();
+		const onAddContextFiles = vi.fn();
+		const onRemoveContext = vi.fn();
+		const file = new File(["# Context"], "context.md", { type: "text/markdown" });
+		const { container } = render(
+			<TaskComposerView
+				{...viewProps({
+					onTitleChange,
+					context: { items: [{ id: "context-1", name: "context.md" }], onAddFiles: onAddContextFiles, onRemove: onRemoveContext },
+				})}
+			/>,
+		);
+
+		fireEvent.change(screen.getByRole("textbox", { name: "Title" }), { target: { value: "Fix login bug" } });
+		expect(onTitleChange).toHaveBeenCalledWith("Fix login bug");
+
+		fireEvent.click(screen.getByRole("button", { name: "Remove context.md" }));
+		expect(onRemoveContext).toHaveBeenCalledWith("context-1");
+
+		const inputs = container.querySelectorAll('input[type="file"]');
+		expect(inputs).toHaveLength(2);
+		fireEvent.change(inputs[1], { target: { files: [file] } });
+		expect(onAddContextFiles).toHaveBeenCalledWith([file]);
 	});
 
 	it("shows attachment and submission errors with the TUI retry", () => {

@@ -1671,6 +1671,8 @@ type fakeCommander struct {
 	restoreErr      error
 	restoreResult   sessionmanager.RestoreResult
 	readyErr        error
+	reverted        []domain.SessionID
+	revertErr       error
 }
 
 func (f *fakeCommander) Spawn(_ context.Context, cfg ports.SpawnConfig) (domain.SessionRecord, int, int, error) {
@@ -1721,6 +1723,13 @@ func (f *fakeCommander) Kill(_ context.Context, id domain.SessionID) (bool, erro
 	}
 	f.killed = append(f.killed, id)
 	return true, nil
+}
+func (f *fakeCommander) RevertUncommitted(_ context.Context, id domain.SessionID) error {
+	if f.revertErr != nil {
+		return f.revertErr
+	}
+	f.reverted = append(f.reverted, id)
+	return nil
 }
 func (f *fakeCommander) RetireForReplacement(_ context.Context, id domain.SessionID) error {
 	if f.retireErr != nil {

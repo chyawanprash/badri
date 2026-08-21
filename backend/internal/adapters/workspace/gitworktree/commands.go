@@ -131,6 +131,19 @@ func cherryPickNoCommitArgs(worktree, commitSHA string) []string {
 	return []string{"-C", worktree, "cherry-pick", "--no-commit", commitSHA}
 }
 
+// resetHardHeadArgs resets the index and working tree to HEAD, discarding
+// both staged and unstaged edits to tracked files without moving HEAD.
+func resetHardHeadArgs(path string) []string {
+	return []string{"-C", path, "reset", "--hard", "HEAD"}
+}
+
+// cleanUntrackedArgs removes untracked files and directories. -d recurses
+// into untracked directories; -f is required for git to act without an
+// explicit clean.requireForce=false config.
+func cleanUntrackedArgs(path string) []string {
+	return []string{"-C", path, "clean", "-fd"}
+}
+
 // ignoredCountArgs lists files skipped because of .gitignore (dry-run, no mutation).
 func ignoredCountArgs(worktree string) []string {
 	return []string{"-C", worktree, "status", "--ignored", "--porcelain"}

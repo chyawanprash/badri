@@ -108,6 +108,10 @@ func (s *stubWorkspace) AddExclude(_ context.Context, _ ports.WorkspaceInfo, _ .
 	return nil
 }
 
+func (s *stubWorkspace) DiscardUncommitted(_ context.Context, _ ports.WorkspaceInfo) error {
+	return nil
+}
+
 type captureMessenger struct{ msgs []string }
 
 func (c *captureMessenger) Send(_ context.Context, _ domain.SessionID, msg string) error {

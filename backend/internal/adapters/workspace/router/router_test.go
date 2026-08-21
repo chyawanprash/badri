@@ -26,6 +26,7 @@ type recordingWorkspace struct {
 	stashCalls         int
 	applyCalls         int
 	addExcludeCalls    int
+	discardCalls       int
 	projectCreateCalls int
 	lastCreate         ports.WorkspaceConfig
 	lastRestore        ports.WorkspaceConfig
@@ -85,6 +86,12 @@ func (w *recordingWorkspace) AddExclude(_ context.Context, info ports.WorkspaceI
 	w.addExcludeCalls++
 	w.lastInfo = info
 	w.lastPatterns = append([]string(nil), patterns...)
+	return nil
+}
+
+func (w *recordingWorkspace) DiscardUncommitted(_ context.Context, info ports.WorkspaceInfo) error {
+	w.discardCalls++
+	w.lastInfo = info
 	return nil
 }
 

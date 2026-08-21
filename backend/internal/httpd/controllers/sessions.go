@@ -91,6 +91,7 @@ type SessionService interface {
 	ListAgentSwitches(ctx context.Context, id domain.SessionID) ([]domain.AgentSwitch, error)
 	SubmitAgentHandoff(ctx context.Context, id domain.SessionID, switchID domain.AgentSwitchID, sourceGenerationID domain.AgentGenerationID, handoff json.RawMessage) (domain.AgentSwitch, error)
 	Kill(ctx context.Context, id domain.SessionID) (bool, error)
+	RevertUncommitted(ctx context.Context, id domain.SessionID) error
 	RollbackSpawn(ctx context.Context, id domain.SessionID) (sessionsvc.RollbackOutcome, error)
 	Cleanup(ctx context.Context, project domain.ProjectID) (sessionsvc.CleanupOutcome, error)
 	Rename(ctx context.Context, id domain.SessionID, displayName string) error
@@ -188,6 +189,7 @@ func (c *SessionsController) Register(r chi.Router) {
 	r.Delete("/sessions/{sessionId}/interface-transition", c.cancelInterfaceTransition)
 	r.Put("/sessions/{sessionId}/interface-transition/{transitionId}/notice-acknowledgement", c.acknowledgeInterfaceTransitionNotice)
 	r.Post("/sessions/{sessionId}/kill", c.kill)
+	r.Post("/sessions/{sessionId}/revert", c.revert)
 	r.Post("/sessions/{sessionId}/rollback", c.rollback)
 	r.Post("/sessions/{sessionId}/send", c.send)
 	r.Post("/sessions/{sessionId}/activity", c.activity)
@@ -352,7 +354,7 @@ func decodeAttachment(a AttachmentInput) (ports.SpawnAttachment, *attachmentErro
 	if len(data) > maxAttachmentBytes {
 		return ports.SpawnAttachment{}, &attachmentError{"ATTACHMENT_TOO_LARGE", "attachment is too large"}
 	}
-	return ports.SpawnAttachment{Ext: ext, Data: data}, nil
+	return ports.SpawnAttachment{Ext: ext, Data: data, Context: a.IsContext}, nil
 }
 
 // decodeSpawnAttachments validates and base64-decodes the inline file
@@ -1225,6 +1227,22 @@ func (c *SessionsController) kill(w http.ResponseWriter, r *http.Request) {
 	envelope.WriteJSON(w, http.StatusOK, KillSessionResponse{OK: true, SessionID: sessionID(r), Freed: freed})
 }
 
+// revert discards uncommitted changes (staged, unstaged, and untracked) in a
+// live session's worktree, resetting it to HEAD. It never moves HEAD, so
+// commits already made on the session's branch are untouched, and it does not
+// stop the running agent.
+func (c *SessionsController) revert(w http.ResponseWriter, r *http.Request) {
+	if c.Svc == nil {
+		apispec.NotImplemented(w, r, "POST", "/api/v1/sessions/{sessionId}/revert")
+		return
+	}
+	if err := c.Svc.RevertUncommitted(r.Context(), sessionID(r)); err != nil {
+		envelope.WriteError(w, r, err)
+		return
+	}
+	envelope.WriteJSON(w, http.StatusOK, RevertSessionResponse{OK: true, SessionID: sessionID(r)})
+}
+
 // rollback undoes a partially-completed spawn: if the session row is still in
 // seed state (no workspace, no runtime handle yet), the row is deleted
 // outright. If anything observable has landed it falls back to Kill so the
@@ -1316,6 +1334,10 @@ func (c *SessionsController) delegateTask(w http.ResponseWriter, r *http.Request
 		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "TASK_TOO_LONG", "Task is too long", nil)
 		return
 	}
+	if utf8.RuneCountInString(strings.TrimSpace(in.Title)) > maxDisplayNameLen {
+		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "TITLE_TOO_LONG", "title must be 20 characters or fewer", nil)
+		return
+	}
 	if utf8.RuneCountInString(strings.TrimSpace(in.Model)) > maxModelLen {
 		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "MODEL_TOO_LONG", "Model must be 256 characters or fewer", nil)
 		return
@@ -1337,6 +1359,7 @@ func (c *SessionsController) delegateTask(w http.ResponseWriter, r *http.Request
 	out, err := c.Svc.DelegateTask(r.Context(), sessionsvc.DelegateTaskInput{
 		ProjectID:      in.ProjectID,
 		Brief:          domain.SanitizeControlChars(in.Brief),
+		Title:          domain.SanitizeControlChars(strings.TrimSpace(in.Title)),
 		RequestedAgent: in.Agent,
 		Model:          domain.SanitizeControlChars(strings.TrimSpace(in.Model)),
 		RequestedMode:  in.Mode,

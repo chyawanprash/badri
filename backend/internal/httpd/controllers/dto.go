@@ -208,6 +208,11 @@ type AttachmentInput struct {
 	// Data is the raw file bytes, standard base64-encoded, without any
 	// "data:...;base64," prefix.
 	Data string `json:"data"`
+	// IsContext marks this as reference material (e.g. a context.md/prd.md)
+	// for the agent to find on disk, rather than a prompt attachment: it is
+	// written into the worktree but never referenced in the prompt text sent
+	// to the agent.
+	IsContext bool `json:"isContext,omitempty"`
 }
 
 // SessionResponse is the { session } body shared by session reads and updates.
@@ -562,6 +567,12 @@ type KillSessionResponse struct {
 	Freed     bool             `json:"freed,omitempty"`
 }
 
+// RevertSessionResponse is the body of POST /api/v1/sessions/{sessionId}/revert.
+type RevertSessionResponse struct {
+	OK        bool             `json:"ok"`
+	SessionID domain.SessionID `json:"sessionId"`
+}
+
 // RollbackSessionResponse is the body of POST /api/v1/sessions/{sessionId}/rollback.
 // Exactly one of Deleted/Killed is true on a successful rollback; both are
 // false when the session was already absent or already terminated (benign).
@@ -606,10 +617,13 @@ type SendSessionMessageResponse struct {
 // DelegateTaskRequest is the body of POST /api/v1/orchestrators/delegate.
 // An omitted agent tells the orchestrator to use the project's worker default.
 type DelegateTaskRequest struct {
-	ProjectID domain.ProjectID    `json:"projectId"`
-	Brief     string              `json:"brief" maxLength:"4096"`
-	Agent     domain.AgentHarness `json:"agent,omitempty" enum:"claude-code,codex,aider,opencode,grok,droid,amp,agy,crush,cursor,qwen,copilot,goose,auggie,continue,devin,cline,kimi,muse,kiro,kilocode,vibe,pi,kimchi,prime-agent,autohand,fake"`
-	Model     string              `json:"model,omitempty" maxLength:"256"`
+	ProjectID domain.ProjectID `json:"projectId"`
+	Brief     string           `json:"brief" maxLength:"4096"`
+	// Title, when set, names the task directly instead of the title AO would
+	// otherwise derive from Brief.
+	Title string              `json:"title,omitempty" maxLength:"20"`
+	Agent domain.AgentHarness `json:"agent,omitempty" enum:"claude-code,codex,aider,opencode,grok,droid,amp,agy,crush,cursor,qwen,copilot,goose,auggie,continue,devin,cline,kimi,muse,kiro,kilocode,vibe,pi,kimchi,prime-agent,autohand,fake"`
+	Model string              `json:"model,omitempty" maxLength:"256"`
 	// Mode is omitted for the daemon-owned default. The UI sends tui only when
 	// the user explicitly accepts the fallback after Chat preflight fails.
 	Mode domain.SessionMode `json:"mode,omitempty" enum:"tui,chat"`

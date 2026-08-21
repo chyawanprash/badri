@@ -29,10 +29,13 @@ import {
 	clearTerminateSessionState,
 	useTerminateSessionState,
 } from "../hooks/useTerminateSession";
+import { useRevertSessionChanges } from "../hooks/useRevertSessionChanges";
 import { cn } from "../lib/utils";
 import { AgentAvatar } from "./AgentAvatar";
 import { ProductExternalLink } from "./ProductExternalLink";
+import { SessionRevertConfirmDialog } from "./SessionRevertConfirmDialog";
 import { SessionTerminationPopover } from "./SessionTerminationPopover";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "./ui/context-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function toBoardSessionPresentation(
@@ -171,10 +174,12 @@ function DesktopSessionCard({
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [revertConfirmOpen, setRevertConfirmOpen] = useState(false);
 	const summaries = sessionPRDisplaySummaries(session, useSessionScmSummary(session.id).data);
 	const termination = useTerminateSessionState(session.id);
+	const revert = useRevertSessionChanges({ onSuccess: () => setRevertConfirmOpen(false) });
 	const showTerminate = interactive && session.isTerminated !== true && onTerminate;
-	const keepTerminateVisible = session.status === "merged";
+	const keepTerminateVisible = session.status === "merged" || confirmOpen;
 	const usagePresentation = toUsagePresentation(usage, t);
 	const translate: ProductUITranslator = (key, values) => t(key as MessageKey, values);
 
@@ -218,7 +223,7 @@ function DesktopSessionCard({
 		/>
 	) : undefined;
 
-	return (
+	const card = (
 		<SessionCardView
 			action={action}
 			branchAction={branchAction}
@@ -246,6 +251,40 @@ function DesktopSessionCard({
 			translate={translate}
 			usage={usagePresentation}
 		/>
+	);
+
+	if (!showTerminate) return card;
+
+	return (
+		<>
+			<ContextMenu>
+				{/* asChild targets this div, not SessionCardView directly: that's a
+				    plain function component with a fixed prop list, so it can't
+				    forward the ref/onContextMenu Radix's Slot would merge onto it. */}
+				<ContextMenuTrigger asChild>
+					<div>{card}</div>
+				</ContextMenuTrigger>
+				<ContextMenuContent>
+					<ContextMenuItem onSelect={() => setRevertConfirmOpen(true)}>
+						{t("shell.contextMenuRevert")}
+					</ContextMenuItem>
+					<ContextMenuItem
+						className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+						onSelect={() => setConfirmOpen(true)}
+					>
+						{t("shell.contextMenuDelete")}
+					</ContextMenuItem>
+				</ContextMenuContent>
+			</ContextMenu>
+			<SessionRevertConfirmDialog
+				error={revert.error instanceof Error ? revert.error.message : undefined}
+				isReverting={revert.isPending}
+				onConfirm={() => revert.mutate(session)}
+				onOpenChange={setRevertConfirmOpen}
+				open={revertConfirmOpen}
+				session={session}
+			/>
+		</>
 	);
 }
 

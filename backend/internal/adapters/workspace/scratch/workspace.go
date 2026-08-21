@@ -114,6 +114,12 @@ func (w *Workspace) AddExclude(context.Context, ports.WorkspaceInfo, ...string) 
 	return nil
 }
 
+// DiscardUncommitted is unsupported for scratch: a plain directory has no
+// commit history to reset to, so there is nothing to discard back to.
+func (w *Workspace) DiscardUncommitted(context.Context, ports.WorkspaceInfo) error {
+	return errors.New("scratch workspace: discarding changes is not supported (no git history)")
+}
+
 // ObserveWorkspace validates the managed path and returns a path-only
 // observation. Scratch projects intentionally have no fabricated Git facts.
 func (w *Workspace) ObserveWorkspace(_ context.Context, info ports.WorkspaceInfo) (ports.WorkspaceObservation, error) {

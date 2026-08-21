@@ -27,13 +27,16 @@ import { SettingsOptionMenu } from "./settings/SettingsOptionMenu";
 type Project = components["schemas"]["Project"];
 type DelegateAgent = components["schemas"]["DelegateTaskRequest"]["agent"];
 
+type TaskAttachmentPayload = FileAttachmentPayload & { isContext?: boolean };
+
 type CreateTaskInput = {
 	projectId: string;
 	brief: string;
+	title?: string;
 	agent?: DelegateAgent;
 	model?: string;
 	mode?: "tui";
-	attachments?: FileAttachmentPayload[];
+	attachments?: TaskAttachmentPayload[];
 };
 
 const CHAT_PREFLIGHT_CODES = new Set([
@@ -70,6 +73,7 @@ export function TaskComposer({
 }: TaskComposerProps) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const [title, setTitle] = useState("");
 	const [prompt, setPrompt] = useState("");
 	const [model, setModel] = useState("");
 	const [mode, setMode] = useState("");
@@ -87,6 +91,14 @@ export function TaskComposer({
 		clear: clearAttachments,
 		toSettledPayload,
 	} = useFileAttachments();
+	const {
+		attachments: contextFiles,
+		error: contextError,
+		addFiles: addContextFiles,
+		remove: removeContextFile,
+		clear: clearContextFiles,
+		toSettledPayload: toSettledContextPayload,
+	} = useFileAttachments();
 	const createTask = useCallback(
 		async (input: CreateTaskInput): Promise<string> => {
 			void captureRendererEvent("ao.renderer.task_create_requested", { project_id: input.projectId });
@@ -97,6 +109,7 @@ export function TaskComposer({
 						brief: input.brief,
 						agent: input.agent,
 						model: input.model,
+						...(input.title ? { title: input.title } : {}),
 						...(input.mode ? { mode: input.mode } : {}),
 						...(input.attachments && input.attachments.length > 0 ? { attachments: input.attachments } : {}),
 					},
@@ -219,7 +232,8 @@ export function TaskComposer({
 		}
 	}, [defaultModelForSelectedAgent, defaultModeForSelectedAgent, modelTouched]);
 
-	const isDirty = prompt.trim() !== "" || modelTouched || attachments.length > 0;
+	const isDirty =
+		title.trim() !== "" || prompt.trim() !== "" || modelTouched || attachments.length > 0 || contextFiles.length > 0;
 	useEffect(() => {
 		onDirtyChange?.(isDirty);
 	}, [isDirty, onDirtyChange]);
@@ -230,6 +244,7 @@ export function TaskComposer({
 	}, [isSubmitting, onSubmittingChange]);
 	useEffect(() => () => onSubmittingChange?.(false), [onSubmittingChange]);
 	useEffect(() => () => clearAttachments(), [clearAttachments]);
+	useEffect(() => () => clearContextFiles(), [clearContextFiles]);
 
 	const submitTask = async (interfaceMode?: "tui") => {
 		if (!projectId || isSubmitting) return;
@@ -245,16 +260,24 @@ export function TaskComposer({
 		setError(undefined);
 		setCanCreateAsTUI(false);
 		try {
-			const attachmentPayloads = await toSettledPayload();
+			const [attachmentPayloads, contextPayloads] = await Promise.all([
+				toSettledPayload(),
+				toSettledContextPayload(),
+			]);
+			const combinedAttachments: TaskAttachmentPayload[] = [
+				...attachmentPayloads,
+				...contextPayloads.map((payload) => ({ ...payload, isContext: true })),
+			];
 			const sessionId = await createTask({
 				projectId,
 				brief: prompt,
+				title: title.trim() || undefined,
 				// The visible selection is authoritative: it is either the user's pick
 				// or the resolved default, so spawning names it explicitly.
 				agent: selectedAgent ? (selectedAgent as CreateTaskInput["agent"]) : undefined,
 				model: requestedModel,
 				mode: interfaceMode,
-				attachments: attachmentPayloads.length > 0 ? attachmentPayloads : undefined,
+				attachments: combinedAttachments.length > 0 ? combinedAttachments : undefined,
 			});
 			onCreated(sessionId);
 		} catch (err) {
@@ -275,8 +298,12 @@ export function TaskComposer({
 			canSubmit={Boolean(projectId)}
 			prompt={prompt}
 			onPromptChange={setPrompt}
+			title={title}
+			onTitleChange={setTitle}
 			labels={{
+				addContext: t("newTask.addContext"),
 				addFile: t("newTask.addFile"),
+				contextPlaceholder: t("newTask.contextPlaceholder"),
 				createAsTui: t("newTask.createAsTui"),
 				removeFile: (name) => t("newTask.removeFile", { name }),
 				runsWith: t("newTask.runsWith"),
@@ -284,6 +311,8 @@ export function TaskComposer({
 				starting: t("newTask.starting"),
 				task: t("newTask.task"),
 				taskPlaceholder: t("newTask.taskPlaceholder"),
+				title: t("newTask.titleLabel"),
+				titlePlaceholder: t("newTask.titlePlaceholder"),
 			}}
 			agent={{
 				label: t("newTask.agent"),
@@ -330,6 +359,12 @@ export function TaskComposer({
 				error: attachmentError,
 				onAddFiles: (files) => void addFiles(files),
 				onRemove: removeAttachment,
+			}}
+			context={{
+				items: contextFiles.map(({ id, name }) => ({ id, name })),
+				error: contextError,
+				onAddFiles: (files) => void addContextFiles(files),
+				onRemove: removeContextFile,
 			}}
 			submission={{
 				canCreateAsTui: canCreateAsTUI,

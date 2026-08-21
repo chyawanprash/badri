@@ -213,6 +213,11 @@ type Workspace interface {
 	// present are skipped. Owning this here keeps git/process execution inside the
 	// workspace adapter rather than leaking into callers.
 	AddExclude(ctx context.Context, info WorkspaceInfo, patterns ...string) error
+	// DiscardUncommitted resets every tracked file in the worktree to HEAD and
+	// removes untracked files and directories, discarding all uncommitted work
+	// (staged or not). It never moves HEAD or touches existing commits, and it
+	// does not stop or affect a runtime attached to the worktree.
+	DiscardUncommitted(ctx context.Context, info WorkspaceInfo) error
 }
 
 // WorkspaceDefaultBranchRefresher is an optional capability for Git-backed

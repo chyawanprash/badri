@@ -1571,6 +1571,39 @@ func (m *Manager) Kill(ctx context.Context, id domain.SessionID) (bool, error) {
 	return freed, nil
 }
 
+// RevertUncommitted discards uncommitted changes (staged, unstaged, and
+// untracked) in a live session's worktree, resetting it to HEAD. It never
+// moves HEAD, so commits the agent already made on the session's branch are
+// untouched, and it does not stop or otherwise affect the running agent.
+func (m *Manager) RevertUncommitted(ctx context.Context, id domain.SessionID) error {
+	if err := m.beginAgentOperation(ctx, id, agentOperationRevert); err != nil {
+		if errors.Is(err, errAgentOperationInProgress) {
+			err = ErrSwitchInProgress
+		}
+		return fmt.Errorf("revert %s: %w", id, err)
+	}
+	defer m.endAgentOperation(id, agentOperationRevert)
+
+	rec, ok, err := m.store.GetSession(ctx, id)
+	if err != nil {
+		return fmt.Errorf("revert %s: %w", id, err)
+	}
+	if !ok {
+		return fmt.Errorf("revert %s: %w", id, ErrNotFound)
+	}
+	if rec.IsTerminated {
+		return fmt.Errorf("revert %s: %w", id, ErrTerminated)
+	}
+	ws := workspaceInfo(rec)
+	if ws.Path == "" {
+		return fmt.Errorf("revert %s: session has no workspace", id)
+	}
+	if err := m.workspace.DiscardUncommitted(ctx, ws); err != nil {
+		return fmt.Errorf("revert %s: workspace: %w", id, err)
+	}
+	return nil
+}
+
 // RetireForReplacement terminates a live orchestrator and releases its branch
 // for a replacement session. Unlike Kill, this captures uncommitted work before
 // force-removing the worktree, so a dirty canonical orchestrator worktree does
@@ -3386,9 +3419,18 @@ func (m *Manager) writeSpawnAttachments(ctx context.Context, id domain.SessionID
 		if ext == "" {
 			ext = ".bin"
 		}
-		name := fmt.Sprintf("attachment-%d%s", i+1, ext)
+		prefix := "attachment-"
+		if a.Context {
+			prefix = "context-"
+		}
+		name := fmt.Sprintf("%s%d%s", prefix, i+1, ext)
 		if err := m.attachments.Put(ctx, id, workspacePath, name, a.Data); err != nil {
 			return nil, fmt.Errorf("write attachment %d: %w", i+1, err)
+		}
+		if a.Context {
+			// Reference material for the agent to find on disk, never announced
+			// in the prompt.
+			continue
 		}
 		// Worktree-relative reference, always forward-slashed for the prompt.
 		refs = append(refs, attachmentsDir+"/"+name)
