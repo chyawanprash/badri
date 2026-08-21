@@ -22,6 +22,13 @@ npm run api                          # regenerate OpenAPI spec + frontend TS typ
 npx @redwoodjs/agent-ci run --all    # local workflow validation; requires Docker socket
 ```
 
+A `pre-push` git hook (`.githooks/pre-push`, wired up automatically by `npm install`'s `prepare`
+script via `core.hooksPath`) runs the fast subset of these checks — npm lockfile sync for every
+`npm ci` directory CI uses, `gofmt`/`go build`/`go vet`, and the frontend/product-ui typechecks —
+before a push leaves your machine. It intentionally skips the full Go test suite and
+golangci-lint (too slow to run on every push); run `npm run lint` or `npm run shared:check`
+by hand for those, or let CI catch them. Skip the hook once with `git push --no-verify`.
+
 Backend-specific checks:
 
 ```bash

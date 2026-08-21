@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Fast local gate before code leaves the machine. Mirrors the cheap parts of
+# CI (lockfile sync, gofmt/build/vet, typechecks) that are quick enough to run
+# on every push; full test suites and golangci-lint stay in CI (npm run lint /
+# npm run shared:check cover those locally if you want to run them by hand).
+#
+# Installed via `core.hooksPath` (see root package.json's "prepare" script),
+# not copied into .git/hooks, so it stays version-controlled.
+#
+# Bypass for a single push: git push --no-verify
+
+set -uo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+fail=0
+note() { printf '  \033[2m%s\033[0m\n' "$1"; }
+bad() { printf '\033[31m✗ %s\033[0m\n' "$1"; fail=1; }
+ok() { printf '\033[32m✓ %s\033[0m\n' "$1"; }
+
+# --- npm lockfile sync: exactly what broke `npm ci` in CI last time ---
+npm_dirs=(. frontend packages/product-ui packages/cloud-client packages/mobile frontend/src/landing scripts)
+for dir in "${npm_dirs[@]}"; do
+	[ -f "$dir/package-lock.json" ] || continue
+	note "npm ci --dry-run ($dir)"
+	# --ignore-scripts: we're only checking lockfile-vs-package.json sync here,
+	# not whether postinstall tooling (e.g. patch-package) happens to be
+	# present yet — that's covered by the real CI install.
+	if ! log=$(cd "$dir" && npm ci --dry-run --ignore-scripts 2>&1); then
+		bad "$dir/package-lock.json is out of sync with package.json"
+		echo "$log" | tail -20
+		echo "  → fix: (cd $dir && npm install) and commit the lock file"
+	fi
+done
+
+# --- backend: gofmt / build / vet (fast, no full test run) ---
+if [ -d backend ]; then
+	note "gofmt"
+	unformatted=$(cd backend && gofmt -l .)
+	if [ -n "$unformatted" ]; then
+		bad "gofmt needs to run on:"
+		echo "$unformatted"
+	fi
+
+	note "go build ./..."
+	(cd backend && go build ./...) || bad "go build failed"
+
+	note "go vet ./..."
+	(cd backend && go vet ./...) || bad "go vet failed"
+fi
+
+# --- typechecks (fast, cached) ---
+if [ -f frontend/package.json ]; then
+	note "frontend typecheck"
+	(cd frontend && npm run typecheck) || bad "frontend typecheck failed"
+fi
+if [ -f packages/product-ui/package.json ]; then
+	note "product-ui typecheck"
+	(cd packages/product-ui && npm run typecheck) || bad "product-ui typecheck failed"
+fi
+
+echo ""
+if [ "$fail" -ne 0 ]; then
+	echo "pre-push checks failed. Fix the above, or skip once with: git push --no-verify"
+	exit 1
+fi
+ok "pre-push fast checks passed (CI still runs the full test/lint suites)"
