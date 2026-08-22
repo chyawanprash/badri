@@ -386,6 +386,8 @@
 	"mobile.noTailscaleHost": "Tailscale isn't running on this computer. Install it and sign in, then reopen this window.",
 	"mobile.password": "Password",
 	"mobile.passwordCopied": "Password copied",
+	"mobile.passwordExpired": "Code expired — regenerate below",
+	"mobile.passwordExpiresIn": "Expires in {{time}}",
 	"mobile.qrHint": "Install TestFlight, then scan to join the beta",
 	"mobile.regenerate": "Regenerate password",
 	"mobile.scanToPair": "Scan to pair",

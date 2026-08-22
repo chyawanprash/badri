@@ -12,12 +12,20 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // DefaultPort is the LAN listener's default port for the Connect Mobile
 // bridge. Distinct from config.DefaultPort (the loopback API port) since the
 // two listeners can run concurrently.
 const DefaultPort = 3011
+
+// PasswordTTL is how long a freshly generated connection password (OTP)
+// authenticates for. After this window the password still displays on the
+// desktop but no longer authenticates a phone; the user must hit Regenerate
+// for a fresh code. Chosen so a pairing survives a workday without forcing a
+// permanent, never-expiring LAN credential.
+const PasswordTTL = 12 * time.Hour
 
 // State is the persisted Connect Mobile bridge config in ~/.ao/mobile/config.json.
 // Password is stored in plaintext by deliberate decision: it is a low-value,
@@ -35,6 +43,12 @@ type State struct {
 	// — pointed at whatever port the restarted LAN listener actually bound, not
 	// this struct's LastPort, since Start can fall back to an ephemeral port.
 	SecurePairing bool `json:"securePairing"`
+	// ExpiresAt is when Password stops authenticating (issued-at + PasswordTTL).
+	// Persisted so the OTP's expiry survives a daemon restart instead of
+	// resetting the clock every time RestoreOnBoot re-arms the listener. The
+	// zero value means "never expires" — true only of state files written
+	// before this field existed.
+	ExpiresAt time.Time `json:"expiresAt,omitempty"`
 }
 
 // Path returns the Connect Mobile config file location under the data dir

@@ -90,8 +90,9 @@ type LANController interface {
 	Stop(ctx context.Context) error
 	Running() bool
 	BoundPort() int
-	SetPasswordHash(hash string)
+	SetPasswordHash(hash string, expiresAt time.Time)
 	PasswordHash() string
+	PasswordExpiresAt() time.Time
 }
 
 // BridgeService is the production mobileBridge. It persists state and drives
@@ -148,6 +149,9 @@ func (b *BridgeService) Status() MobileStatusResponse {
 	// /api/v1/mobile via lanControlBlock), so the plaintext never reaches a phone.
 	if enabled {
 		res.Password = st.Password
+		if !st.ExpiresAt.IsZero() {
+			res.PasswordExpiresAt = st.ExpiresAt.UTC().Format(time.RFC3339)
+		}
 	}
 	res.SecurePairing = b.securePairingStatus(st.SecurePairing, enabled)
 	return res
@@ -249,19 +253,23 @@ func (b *BridgeService) enableWithPassword(pw string) (MobileStatusResponse, err
 	// failed enable would leave a LAN listener open on 0.0.0.0 with the new
 	// password while persisted state/UI still say the bridge is off.
 	prevHash := b.LAN.PasswordHash()
+	prevExpiresAt := b.LAN.PasswordExpiresAt()
 	wasRunning := b.LAN.Running()
 	prevSt, _ := mobilebridge.Load(b.ConfigPath)
 
 	// The persisted password is plaintext; the auth hash is derived in memory.
-	b.LAN.SetPasswordHash(mobilebridge.HashPassword(pw))
+	// Every issuance gets a fresh PasswordTTL window from now, whether this is a
+	// first enable or a rotate.
+	expiresAt := time.Now().Add(mobilebridge.PasswordTTL)
+	b.LAN.SetPasswordHash(mobilebridge.HashPassword(pw), expiresAt)
 	port, err := b.LAN.Start(b.DefaultPort)
 	if err != nil {
-		b.LAN.SetPasswordHash(prevHash) // Start failed: undo the hash swap.
+		b.LAN.SetPasswordHash(prevHash, prevExpiresAt) // Start failed: undo the swap.
 		return MobileStatusResponse{}, err
 	}
 	// Preserve the persisted SecurePairing flag — this Save is not the place a
 	// user's secure-pairing choice changes, only where enabled/password/port do.
-	if err := mobilebridge.Save(b.ConfigPath, mobilebridge.State{Enabled: true, Password: pw, LastPort: port, SecurePairing: prevSt.SecurePairing}); err != nil {
+	if err := mobilebridge.Save(b.ConfigPath, mobilebridge.State{Enabled: true, Password: pw, LastPort: port, SecurePairing: prevSt.SecurePairing, ExpiresAt: expiresAt}); err != nil {
 		// Persist failed after the listener came up. Roll back so reality matches
 		// the unchanged persisted state (and the UI's "enable failed"). A rotate on
 		// an already-running listener (wasRunning) keeps serving on the prior hash;
@@ -271,7 +279,7 @@ func (b *BridgeService) enableWithPassword(pw string) (MobileStatusResponse, err
 			defer cancel()
 			_ = b.LAN.Stop(ctx)
 		}
-		b.LAN.SetPasswordHash(prevHash)
+		b.LAN.SetPasswordHash(prevHash, prevExpiresAt)
 		return MobileStatusResponse{}, err
 	}
 	// Re-point the proxy at the port Start actually bound. This runs on every
@@ -299,7 +307,10 @@ func (b *BridgeService) enableWithPassword(pw string) (MobileStatusResponse, err
 // serveErr, never returned — the caller (restoreMobileOnBoot) treats this as
 // best-effort and must never block daemon boot on it.
 func (b *BridgeService) RestoreOnBoot(state mobilebridge.State) error {
-	b.LAN.SetPasswordHash(mobilebridge.HashPassword(state.Password))
+	// Reuses the persisted ExpiresAt, not a fresh PasswordTTL window — a daemon
+	// restart must not reset the OTP's clock, or a "12 hour" code would in
+	// practice never expire on a machine that restarts more often than that.
+	b.LAN.SetPasswordHash(mobilebridge.HashPassword(state.Password), state.ExpiresAt)
 	port, err := b.LAN.Start(state.LastPort)
 	if err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/aoagents/agent-orchestrator/backend/internal/mobilebridge"
 )
@@ -40,6 +41,7 @@ func (f *fakeBridge) SetSecurePairing(on bool) (MobileStatusResponse, error) {
 type fakeLAN struct {
 	running   bool
 	hash      string
+	expiresAt time.Time
 	stopCalls int
 }
 
@@ -49,10 +51,13 @@ func (f *fakeLAN) Stop(ctx context.Context) error {
 	f.running = false
 	return nil
 }
-func (f *fakeLAN) Running() bool            { return f.running }
-func (f *fakeLAN) BoundPort() int           { return 3011 }
-func (f *fakeLAN) SetPasswordHash(h string) { f.hash = h }
-func (f *fakeLAN) PasswordHash() string     { return f.hash }
+func (f *fakeLAN) Running() bool  { return f.running }
+func (f *fakeLAN) BoundPort() int { return 3011 }
+func (f *fakeLAN) SetPasswordHash(h string, expiresAt time.Time) {
+	f.hash, f.expiresAt = h, expiresAt
+}
+func (f *fakeLAN) PasswordHash() string         { return f.hash }
+func (f *fakeLAN) PasswordExpiresAt() time.Time { return f.expiresAt }
 
 // When Save fails during a fresh enable, the listener that Start already opened
 // must be torn back down and the armed hash rolled back — otherwise a LAN
@@ -116,6 +121,62 @@ func TestMobileStatusSurfacesBothHosts(t *testing.T) {
 	}
 	if got.TailscaleHost != "100.72.46.7" {
 		t.Errorf("TailscaleHost = %q want 100.72.46.7", got.TailscaleHost)
+	}
+}
+
+// Enable must arm the LAN listener's credential with a PasswordTTL expiry
+// (not the zero "never expires" value) and surface it in Status, so the
+// renderer can show a countdown and the phone's OTP actually lapses.
+func TestMobileEnableArmsPasswordExpiry(t *testing.T) {
+	lan := &fakeLAN{}
+	b := &BridgeService{LAN: lan, ConfigPath: filepath.Join(t.TempDir(), "mobile", "config.json"), DefaultPort: 3011}
+	before := time.Now()
+	if _, err := b.Enable(); err != nil {
+		t.Fatalf("enable: %v", err)
+	}
+	after := time.Now()
+
+	if lan.expiresAt.Before(before.Add(mobilebridge.PasswordTTL)) || lan.expiresAt.After(after.Add(mobilebridge.PasswordTTL)) {
+		t.Fatalf("armed expiry %v not within [now+TTL] window [%v, %v]", lan.expiresAt, before.Add(mobilebridge.PasswordTTL), after.Add(mobilebridge.PasswordTTL))
+	}
+
+	got := b.Status().PasswordExpiresAt
+	want := lan.expiresAt.UTC().Format(time.RFC3339)
+	if got != want {
+		t.Fatalf("Status().PasswordExpiresAt = %q, want %q", got, want)
+	}
+}
+
+// Regenerate must stamp a FRESH PasswordTTL window, not keep the one from the
+// original enable — rotating the code is exactly how a user extends a
+// pairing past 12 hours.
+func TestMobileRegenerateRefreshesPasswordExpiry(t *testing.T) {
+	lan := &fakeLAN{}
+	b := &BridgeService{LAN: lan, ConfigPath: filepath.Join(t.TempDir(), "mobile", "config.json"), DefaultPort: 3011}
+	if _, err := b.Enable(); err != nil {
+		t.Fatalf("enable: %v", err)
+	}
+	firstExpiry := lan.expiresAt
+
+	if _, err := b.Regenerate(); err != nil {
+		t.Fatalf("regenerate: %v", err)
+	}
+	if !lan.expiresAt.After(firstExpiry) {
+		t.Fatalf("regenerate expiry %v did not move past the original %v", lan.expiresAt, firstExpiry)
+	}
+}
+
+// RestoreOnBoot must reuse the persisted expiry rather than granting a fresh
+// PasswordTTL window — a daemon restart must not reset a 12-hour OTP's clock.
+func TestRestoreOnBootReusesPersistedExpiry(t *testing.T) {
+	lan := &fakeLAN{}
+	b := &BridgeService{LAN: lan, ConfigPath: filepath.Join(t.TempDir(), "mobile", "config.json"), DefaultPort: 3011}
+	persistedExpiry := time.Now().Add(-time.Hour) // already expired, on purpose
+	if err := b.RestoreOnBoot(mobilebridge.State{Enabled: true, Password: "secret12", LastPort: 3011, ExpiresAt: persistedExpiry}); err != nil {
+		t.Fatalf("restore: %v", err)
+	}
+	if !lan.expiresAt.Equal(persistedExpiry) {
+		t.Fatalf("restored expiry = %v, want the persisted %v (unchanged)", lan.expiresAt, persistedExpiry)
 	}
 }
 

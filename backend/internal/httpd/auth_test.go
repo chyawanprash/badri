@@ -3,6 +3,7 @@ package httpd
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -208,6 +209,57 @@ func TestNoCookieSetOnNonPreviewRoutes(t *testing.T) {
 	for _, ck := range w.Result().Cookies() {
 		if ck.Name == authCookieName {
 			t.Fatal("auth cookie must not be set on a non-preview route")
+		}
+	}
+}
+
+// TestAuthOTPExpiryRejectsWithDistinctCode proves a correct password stops
+// authenticating once its TTL passes, and that the caller can tell this apart
+// from a wrong guess (distinct error code, not just a 401).
+func TestAuthOTPExpiryRejectsWithDistinctCode(t *testing.T) {
+	st := &authState{}
+	now := time.Now()
+	st.setCredential(mobilebridge.HashPassword("secret12"), now.Add(time.Hour))
+	lock := newLockout(5, time.Minute, func() time.Time { return now })
+	ok := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	h := authMiddleware(st, lock, nil)(ok)
+
+	// Still within the window: the right password works.
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, req("Bearer secret12"))
+	if w.Code != http.StatusOK {
+		t.Fatalf("within TTL: got %d want 200", w.Code)
+	}
+
+	// Past the window: the SAME password now reports OTP_EXPIRED, not just 401.
+	now = now.Add(time.Hour + time.Minute)
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, req("Bearer secret12"))
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("past TTL: got %d want 401", w.Code)
+	}
+	if body := w.Body.String(); !strings.Contains(body, "OTP_EXPIRED") {
+		t.Fatalf("past TTL body = %q, want it to carry code OTP_EXPIRED", body)
+	}
+}
+
+// TestAuthOTPExpiryDoesNotCountTowardLockout proves a phone that keeps
+// presenting a stale-but-correct password past expiry never gets locked out
+// for it — expiry is not a guessing attack, so repeated attempts must not
+// burn the 5-attempt budget a real brute-force guess would.
+func TestAuthOTPExpiryDoesNotCountTowardLockout(t *testing.T) {
+	st := &authState{}
+	now := time.Now()
+	st.setCredential(mobilebridge.HashPassword("secret12"), now.Add(-time.Minute)) // already expired
+	lock := newLockout(5, time.Minute, func() time.Time { return now })
+	ok := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	h := authMiddleware(st, lock, nil)(ok)
+
+	for i := 0; i < 10; i++ {
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, req("Bearer secret12"))
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("attempt %d: got %d want 401 (never 429 — expiry isn't a guess)", i, w.Code)
 		}
 	}
 }

@@ -1,12 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiClient } from "../../lib/api-client";
 import { appI18n } from "../../i18n";
 import { MobileDevicesSection, mobileDevicesQueryKey } from "./MobileDevicesSection";
 
+// refetchInterval keeps the query polling in the background; leaving a client
+// running past its test causes a state update on an unmounted tree in a later
+// test (an act() warning that misattributes to whichever test happens to be
+// running when the timer fires). Track it so afterEach can unmount and stop it.
+let activeClient: QueryClient | undefined;
+
 function renderSection() {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+	activeClient = client;
 	const result = render(
 		<QueryClientProvider client={client}>
 			<MobileDevicesSection />
@@ -34,6 +41,9 @@ const twoDevices = {
 
 describe("MobileDevicesSection", () => {
 	afterEach(async () => {
+		activeClient?.clear();
+		activeClient = undefined;
+		cleanup();
 		vi.restoreAllMocks();
 		await appI18n.changeLanguage("en");
 	});

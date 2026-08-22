@@ -1196,11 +1196,15 @@ type MobileStatusResponse struct {
 	// TailscaleHost is this machine's 100.64.0.0/10 Tailscale address, or "" when
 	// Tailscale is not up. The renderer encodes it into the pairing QR when the
 	// user selects the Tailscale tab, and shows a hint instead when it is empty.
-	TailscaleHost string              `json:"tailscaleHost"`
-	Port          int                 `json:"port"`
-	Password      string              `json:"password"`
-	Warning       string              `json:"warning"`
-	SecurePairing SecurePairingStatus `json:"securePairing"`
+	TailscaleHost string `json:"tailscaleHost"`
+	Port          int    `json:"port"`
+	Password      string `json:"password"`
+	// PasswordExpiresAt is when Password stops authenticating (RFC 3339, UTC),
+	// or "" when the bridge is disabled. The renderer uses it to show a
+	// countdown and prompt Regenerate once it passes.
+	PasswordExpiresAt string              `json:"passwordExpiresAt,omitempty"`
+	Warning           string              `json:"warning"`
+	SecurePairing     SecurePairingStatus `json:"securePairing"`
 }
 
 // SecurePairingStatus describes the optional TLS-over-Tailscale pairing mode,

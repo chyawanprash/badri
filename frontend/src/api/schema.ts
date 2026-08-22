@@ -2364,6 +2364,7 @@ export interface components {
             enabled: boolean;
             host: string;
             password: string;
+            passwordExpiresAt?: string;
             port: number;
             securePairing: components["schemas"]["ControllersSecurePairingStatus"];
             tailscaleHost: string;

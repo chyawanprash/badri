@@ -106,11 +106,12 @@ func NewMobileLAN(handler http.Handler, defaultPort int, log *slog.Logger, sink 
 	return NewLANManager(handler, &authState{}, defaultPort, log, sink)
 }
 
-// SetPasswordHash stores the current connection password hash on the shared
-// authState so the auth middleware (already wrapping handler) validates
-// against it. Satisfies controllers.LANController.
-func (m *LANManager) SetPasswordHash(hash string) {
-	m.state.setHash(hash)
+// SetPasswordHash stores the current connection password hash and its OTP
+// expiry on the shared authState so the auth middleware (already wrapping
+// handler) validates against it. A zero expiresAt never expires. Satisfies
+// controllers.LANController.
+func (m *LANManager) SetPasswordHash(hash string, expiresAt time.Time) {
+	m.state.setCredential(hash, expiresAt)
 }
 
 // PasswordHash returns the current connection password hash. Used to snapshot the
@@ -118,6 +119,13 @@ func (m *LANManager) SetPasswordHash(hash string) {
 // Satisfies controllers.LANController.
 func (m *LANManager) PasswordHash() string {
 	return m.state.currentHash()
+}
+
+// PasswordExpiresAt returns the current credential's OTP expiry (zero if it
+// never expires). Used alongside PasswordHash to snapshot/restore state on a
+// failed enable/regenerate. Satisfies controllers.LANController.
+func (m *LANManager) PasswordExpiresAt() time.Time {
+	return m.state.current().expiresAt
 }
 
 // Start binds the network-facing listener on 0.0.0.0:port (falling back to an

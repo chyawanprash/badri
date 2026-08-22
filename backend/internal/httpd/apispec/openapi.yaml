@@ -6911,6 +6911,8 @@ components:
           type: string
         password:
           type: string
+        passwordExpiresAt:
+          type: string
         port:
           type: integer
         securePairing:

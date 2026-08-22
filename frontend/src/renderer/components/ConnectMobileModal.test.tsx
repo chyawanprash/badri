@@ -27,7 +27,10 @@ const { mobileStatus } = vi.hoisted(() => ({
 vi.mock("../lib/telemetry", () => ({ captureRendererEvent: vi.fn() }));
 vi.mock("../lib/api-client", () => ({
 	apiClient: {
-		GET: async () => ({ data: mobileStatus, error: undefined }),
+		GET: async (path: string) =>
+			path === "/api/v1/mobile/devices"
+				? { data: { devices: [] }, error: undefined }
+				: { data: mobileStatus, error: undefined },
 		POST: vi.fn(async () => ({ data: {}, error: undefined })),
 	},
 	apiErrorMessage: () => "failed",

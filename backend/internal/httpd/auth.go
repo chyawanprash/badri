@@ -12,16 +12,43 @@ import (
 	"github.com/aoagents/agent-orchestrator/backend/internal/mobilebridge"
 )
 
-// authState holds the current password hash for the LAN listener. Swapped
-// atomically on regenerate so an in-flight request never sees a torn value.
-type authState struct{ hash atomic.Pointer[string] }
+// credential is the LAN listener's current connection password: its hash and
+// when it stops authenticating (the zero Time means "never expires", used by
+// tests and any caller that doesn't care about the OTP window).
+type credential struct {
+	hash      string
+	expiresAt time.Time
+}
 
-func (a *authState) setHash(h string) { a.hash.Store(&h) }
-func (a *authState) currentHash() string {
-	if p := a.hash.Load(); p != nil {
+// authState holds the current credential for the LAN listener. Swapped
+// atomically on regenerate so an in-flight request never sees a torn value
+// (hash and expiry always change together, from the same credential).
+type authState struct{ cred atomic.Pointer[credential] }
+
+// setHash arms hash with no expiry. Used by tests and callers that don't
+// model the OTP window; production always goes through setCredential.
+func (a *authState) setHash(hash string) { a.setCredential(hash, time.Time{}) }
+
+func (a *authState) setCredential(hash string, expiresAt time.Time) {
+	a.cred.Store(&credential{hash: hash, expiresAt: expiresAt})
+}
+
+func (a *authState) current() credential {
+	if p := a.cred.Load(); p != nil {
 		return *p
 	}
-	return ""
+	return credential{}
+}
+
+func (a *authState) currentHash() string { return a.current().hash }
+
+// expired reports whether the current credential's OTP window has passed as
+// of now. A zero expiresAt (no TTL set) never expires. now is a parameter
+// (rather than time.Now() inline) so it shares the same injectable clock as
+// the lockout, and tests can move both without a real sleep.
+func (a *authState) expired(now time.Time) bool {
+	exp := a.current().expiresAt
+	return !exp.IsZero() && now.After(exp)
 }
 
 // lockout throttles password guessing per source address.
@@ -172,6 +199,16 @@ func authMiddleware(state *authState, lock *lockout, connected *mobileConnectRep
 			if lock.blocked(src) {
 				envelope.WriteAPIError(w, r, http.StatusTooManyRequests, "too_many_requests", "LOCKED_OUT",
 					"too many failed attempts; try again shortly", nil)
+				return
+			}
+			// An expired OTP is a stale legitimate credential, not a guess — it
+			// gets its own code and skips the lockout counter, so a phone that
+			// keeps polling past expiry (or opening a paused preview) doesn't lock
+			// itself out. Checked before the token so it wins over WRONG too, but
+			// a missing/absent token still reports the normal BAD_PASSWORD below.
+			if tok := connectionToken(r); tok != "" && state.expired(lock.now()) {
+				envelope.WriteAPIError(w, r, http.StatusUnauthorized, "unauthorized", "OTP_EXPIRED",
+					"connection code expired; open Connect Mobile on the desktop for a new one", nil)
 				return
 			}
 			if tok := connectionToken(r); mobilebridge.PasswordMatches(state.currentHash(), tok) {

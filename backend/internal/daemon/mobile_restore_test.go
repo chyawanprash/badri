@@ -3,6 +3,7 @@ package daemon
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/aoagents/agent-orchestrator/backend/internal/httpd/controllers"
 	"github.com/aoagents/agent-orchestrator/backend/internal/mobilebridge"
@@ -11,9 +12,10 @@ import (
 // fakeLAN is a minimal httpd.LANController fake for exercising
 // restoreMobileOnBoot without a real listener.
 type fakeLAN struct {
-	started bool
-	hash    string
-	port    int
+	started   bool
+	hash      string
+	expiresAt time.Time
+	port      int
 	// returnPort, when non-zero, is what Start returns instead of the port it
 	// was asked for — simulating LANManager's ephemeral-port fallback when the
 	// requested port is already taken (e.g. by another AO instance). Left zero,
@@ -33,8 +35,11 @@ func (f *fakeLAN) Start(port int) (int, error) {
 func (f *fakeLAN) Stop(ctx context.Context) error { return nil }
 func (f *fakeLAN) Running() bool                  { return f.started }
 func (f *fakeLAN) BoundPort() int                 { return f.port }
-func (f *fakeLAN) SetPasswordHash(hash string)    { f.hash = hash }
-func (f *fakeLAN) PasswordHash() string           { return f.hash }
+func (f *fakeLAN) SetPasswordHash(hash string, expiresAt time.Time) {
+	f.hash, f.expiresAt = hash, expiresAt
+}
+func (f *fakeLAN) PasswordHash() string         { return f.hash }
+func (f *fakeLAN) PasswordExpiresAt() time.Time { return f.expiresAt }
 
 func TestRestoreEnabledStartsListener(t *testing.T) {
 	dir := t.TempDir()

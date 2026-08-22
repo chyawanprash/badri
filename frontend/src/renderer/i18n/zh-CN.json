@@ -386,6 +386,8 @@
 	"mobile.noTailscaleHost": "此电脑未运行 Tailscale。请安装并登录后重新打开此窗口。",
 	"mobile.password": "密码",
 	"mobile.passwordCopied": "密码已复制",
+	"mobile.passwordExpired": "验证码已过期 — 请在下方重新生成",
+	"mobile.passwordExpiresIn": "{{time}}后过期",
 	"mobile.qrHint": "安装 TestFlight 后扫描以加入测试",
 	"mobile.regenerate": "重新生成密码",
 	"mobile.scanToPair": "扫码配对",

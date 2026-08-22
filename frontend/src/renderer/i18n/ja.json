@@ -386,6 +386,8 @@
 	"mobile.noTailscaleHost": "このコンピュータで Tailscale が実行されていません。インストールしてサインインしてから、このウィンドウを開き直してください。",
 	"mobile.password": "パスワード",
 	"mobile.passwordCopied": "パスワードをコピーしました",
+	"mobile.passwordExpired": "コードの有効期限が切れました。下で再生成してください",
+	"mobile.passwordExpiresIn": "有効期限まで残り{{time}}",
 	"mobile.qrHint": "TestFlight をインストールしてからスキャンし、ベータに参加",
 	"mobile.regenerate": "パスワードを再生成",
 	"mobile.scanToPair": "スキャンしてペアリング",

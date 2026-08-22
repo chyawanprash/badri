@@ -388,6 +388,8 @@
 	"mobile.noTailscaleHost": "Tailscale no se está ejecutando en este ordenador. Instálalo, inicia sesión y vuelve a abrir esta ventana.",
 	"mobile.password": "Contraseña",
 	"mobile.passwordCopied": "Contraseña copiada",
+	"mobile.passwordExpired": "Código caducado; vuelve a generarlo abajo",
+	"mobile.passwordExpiresIn": "Caduca en {{time}}",
 	"mobile.qrHint": "Instala TestFlight y luego escanea para unirte a la beta",
 	"mobile.regenerate": "Regenerar contraseña",
 	"mobile.scanToPair": "Escanear para emparejar",

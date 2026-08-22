@@ -34,6 +34,11 @@ interface MobileStatus {
 	tailscaleHost: string;
 	port: number;
 	password: string;
+	// RFC 3339 UTC, or absent/"" when the bridge is disabled. The OTP stops
+	// authenticating at this instant (backend/internal/mobilebridge.PasswordTTL,
+	// currently 12h from the last enable/regenerate) even though the bridge
+	// itself stays up — the password just needs regenerating.
+	passwordExpiresAt?: string;
 	warning: string;
 	securePairing: {
 		enabled: boolean;
@@ -55,6 +60,19 @@ interface MobileStatus {
 // to what older app builds already scan successfully.
 export function pairingPayload(host: string, port: number, password: string, secure?: boolean): string {
 	return JSON.stringify(secure ? { v: 1, host, port, password, secure: true } : { v: 1, host, port, password });
+}
+
+// remainingTime formats the time left until expiresAt as "11h 42m" (or "42m"
+// once under an hour), or null once expiresAt has passed — the caller shows
+// the expired message instead. Coarse to the minute: this is a "regenerate
+// soon" cue, not a precise clock.
+function remainingTime(expiresAt: string): string | null {
+	const ms = Date.parse(expiresAt) - Date.now();
+	if (ms <= 0) return null;
+	const totalMinutes = Math.ceil(ms / 60_000);
+	const hours = Math.floor(totalMinutes / 60);
+	const minutes = totalMinutes % 60;
+	return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 }
 
 async function fetchMobileStatus(): Promise<MobileStatus> {
@@ -349,6 +367,19 @@ export function ConnectMobileModal({ open, onOpenChange }: ConnectMobileModalPro
 													</button>
 												</div>
 											</div>
+											{status.passwordExpiresAt && (
+												<div className="flex items-center gap-6 text-sm leading-5">
+													<span className="w-(--size-settings-mobile-label) shrink-0 text-settings-muted" />
+													<span className="text-settings-muted">
+														{(() => {
+															const remaining = remainingTime(status.passwordExpiresAt);
+															return remaining
+																? t("mobile.passwordExpiresIn", { time: remaining })
+																: t("mobile.passwordExpired");
+														})()}
+													</span>
+												</div>
+											)}
 										</div>
 
 										<Button

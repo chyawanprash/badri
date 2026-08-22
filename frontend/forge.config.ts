@@ -18,11 +18,6 @@ const DEFAULT_RELEASE_REPO = "KrishnaSSH/badri";
 // shortcut/launcher at the SAME name. Drift here means a broken Start menu
 // shortcut on Windows (#2414) or "could not find the Electron app binary" on deb.
 const EXECUTABLE_NAME = "badri";
-const AUTH_PROTOCOL = {
-	name: "Badri authentication callback",
-	schemes: ["ao-app"],
-};
-const AUTH_PROTOCOL_MIME_TYPE = "x-scheme-handler/ao-app";
 
 // parseReleaseRepo turns an "owner/repo" string (from AO_RELEASE_REPO) into the
 // publisher-github { owner, name } shape, falling back to the production default
@@ -42,7 +37,6 @@ const config: ForgeConfig = {
 		appBundleId: "dev.badri.desktop",
 		name: "Badri",
 		executableName: EXECUTABLE_NAME,
-		protocols: [AUTH_PROTOCOL],
 		appCategoryType: "public.app-category.developer-tools",
 		// App icon. electron-packager appends the per-platform extension
 		// (.icns on macOS, .ico on Windows); Linux menu icons come from the
@@ -166,7 +160,6 @@ const config: ForgeConfig = {
 				appId: "dev.badri.desktop",
 				productName: "Badri",
 				icon: "assets/icon.png",
-				protocols: [AUTH_PROTOCOL],
 			},
 			["linux"],
 		),
@@ -181,7 +174,6 @@ const config: ForgeConfig = {
 					icon: "assets/icon.png",
 					maintainer: "Badri",
 					homepage: "https://github.com/KrishnaSSH/badri",
-					mimeType: [AUTH_PROTOCOL_MIME_TYPE],
 				},
 			},
 		},
@@ -193,7 +185,6 @@ const config: ForgeConfig = {
 					// rpmbuild rejects a spec with an empty License field.
 					license: "MIT",
 					homepage: "https://github.com/KrishnaSSH/badri",
-					mimeType: [AUTH_PROTOCOL_MIME_TYPE],
 				},
 			},
 		},
